@@ -1,42 +1,51 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
+  <title data-key="title">세아이농장 스마트팜</title>
   <link href='/style.css' rel='stylesheet'>
 </head>
 <body>
-  <div>
-    <h1>세아이농장 스마트팜세아이농장</h1>
-    <h2>농산물스마트팜문의</h2>
+  <header>
+    <div class="controls">
+      <button id="mode-toggle" data-key="mode-toggle-label">다크 모드</button>
+      <select id="language-switcher">
+        <option value="ko">한국어</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </header>
+  <div class="content">
+    <h1 data-key="farm-name">세아이농장 스마트팜세아이농장</h1>
+    <h2 data-key="farm-inquiry">농산물스마트팜문의</h2>
 
-    <p>신선한 농산물 &amp; 스마트팜 솔루션</p>
-    <p>청정 자연에서 재배한 프리미엄 농산물과 최첨단 스마트팜 시설</p>
+    <p data-key="slogan-1">신선한 농산물 &amp; 스마트팜 솔루션</p>
+    <p data-key="slogan-2">청정 자연에서 재배한 프리미엄 농산물과 최첨단 스마트팜 시설</p>
 
-    <h3>농산물 판매</h3>
-    <p><strong>친환경 채소</strong></p>
-    <p>신선하고 건강한 먹거리</p>
-    <p><strong>유기농 쌀</strong></p>
-    <p>신선하고 건강한 먹거리</p>
-    <p><strong>특산물</strong></p>
-    <p>신선하고 건강한 먹거리</p>
+    <h3 data-key="produce-sales">농산물 판매</h3>
+    <p><strong><span data-key="eco-friendly-veg">친환경 채소</span></strong></p>
+    <p data-key="fresh-healthy-food">신선하고 건강한 먹거리</p>
+    <p><strong><span data-key="organic-rice">유기농 쌀</span></strong></p>
+    <p data-key="fresh-healthy-food-2">신선하고 건강한 먹거리</p>
+    <p><strong><span data-key="special-products">특산물</span></strong></p>
+    <p data-key="fresh-healthy-food-3">신선하고 건강한 먹거리</p>
 
-    <h3>스마트팜 시설 컨설팅</h3>
-    <p><strong>자동 환경 제어</strong></p>
-    <p>최신 기술로 효율적인 농업</p>
-    <p><strong>원격 모니터링</strong></p>
-    <p>최신 기술로 효율적인 농업</p>
-    <p><strong>에너지 관리</strong></p>
-    <p>최신 기술로 효율적인 농업</p>
+    <h3 data-key="smartfarm-consulting">스마트팜 시설 컨설팅</h3>
+    <p><strong><span data-key="auto-env-control">자동 환경 제어</span></strong></p>
+    <p data-key="efficient-agri">최신 기술로 효율적인 농업</p>
+    <p><strong><span data-key="remote-monitoring">원격 모니터링</span></strong></p>
+    <p data-key="efficient-agri-2">최신 기술로 효율적인 농업</p>
+    <p><strong><span data-key="energy-management">에너지 관리</span></strong></p>
+    <p data-key="efficient-agri-3">최신 기술로 효율적인 농업</p>
 
-    <h2>문의하기</h2>
-    <p>대표자: 김진동</p>
+    <h2 data-key="contact-us">문의하기</h2>
+    <p><span data-key="ceo-label">대표자</span>: 김진동</p>
     <p>010-7710-3993</p>
     <p>nmdong@gmail.com</p>
-    <p>경상북도 영주시</p>
+    <p><span data-key="location-label">경상북도 영주시</span></p>
 
-    <p>© 2026 세아이농장 스마트팜. All rights reserved.</p>
+    <p data-key="copyright">© 2026 세아이농장 스마트팜. All rights reserved.</p>
   </div>
   <script defer type="text/javascript" src="/main.js"></script>
 </body>

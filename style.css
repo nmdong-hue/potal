@@ -1,1 +1,86 @@
-/* Add styles here */
+/* Basic Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Theme Variables */
+:root {
+  /* Light mode colors */
+  --background-color: #ffffff;
+  --text-color: #333333;
+  --header-bg-color: #f0f0f0;
+  --button-bg-color: #007bff;
+  --button-text-color: #ffffff;
+  --link-color: #007bff;
+}
+
+body.dark-mode {
+  /* Dark mode colors */
+  --background-color: #333333;
+  --text-color: #ffffff;
+  --header-bg-color: #222222;
+  --button-bg-color: #1a73e8;
+  --button-text-color: #ffffff;
+  --link-color: #8ab4f8;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+header {
+  background-color: var(--header-bg-color);
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-radius: 5px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  background-color: var(--button-bg-color);
+  color: var(--button-text-color);
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+select {
+  padding: 8px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+a {
+  color: var(--link-color);
+}
+
+h1, h2, h3 {
+  color: var(--text-color);
+}
+
+.content {
+  max-width: 800px;
+  margin: auto;
+  padding: 0 20px;
+}
