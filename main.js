@@ -5,33 +5,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Dark/Light Mode ---
   const currentTheme = localStorage.getItem('theme');
-  if (currentTheme) {
-    htmlElement.classList.add(currentTheme);
-    if (currentTheme === 'dark-mode') {
-      modeToggle.textContent = '라이트 모드';
-    } else {
-      modeToggle.textContent = '다크 모드';
-    }
-  } else {
-    // Default to light mode and set button text
-    htmlElement.classList.add('light-mode');
-    modeToggle.textContent = '다크 모드';
-  }
-
-  modeToggle.addEventListener('click', () => {
-    if (htmlElement.classList.contains('dark-mode')) {
-      htmlElement.classList.remove('dark-mode');
-      htmlElement.classList.add('light-mode');
-      localStorage.setItem('theme', 'light-mode');
-      modeToggle.textContent = '다크 모드';
-    } else {
-      htmlElement.classList.remove('light-mode');
-      htmlElement.classList.add('dark-mode');
-      localStorage.setItem('theme', 'dark-mode');
-      modeToggle.textContent = '라이트 모드';
-    }
-  });
-
+      if (currentTheme) {
+        document.body.classList.add(currentTheme); // Changed from htmlElement
+        if (currentTheme === 'dark-mode') {
+          modeToggle.textContent = '라이트 모드';
+        } else {
+          modeToggle.textContent = '다크 모드';
+        }
+      } else {
+        // Default to light mode and set button text
+        document.body.classList.add('light-mode'); // Changed from htmlElement
+        modeToggle.textContent = '다크 모드';
+      }
+  
+      modeToggle.addEventListener('click', () => {
+        if (document.body.classList.contains('dark-mode')) { // Changed from htmlElement
+          document.body.classList.remove('dark-mode'); // Changed from htmlElement
+          document.body.classList.add('light-mode'); // Changed from htmlElement
+          localStorage.setItem('theme', 'light-mode');
+          modeToggle.textContent = '다크 모드';
+        } else {
+          document.body.classList.remove('light-mode'); // Changed from htmlElement
+          document.body.classList.add('dark-mode'); // Changed from htmlElement
+          localStorage.setItem('theme', 'dark-mode');
+          modeToggle.textContent = '라이트 모드';
+        }
+      });
   // --- Language Switcher ---
   const translations = {
     'ko': {
@@ -57,9 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
       'copyright': '© 2026 세아이농장 스마트팜. All rights reserved.',
     },
     'en': {
-      'title': 'Se-Ai Farm Smart Farm',
+      'title': 'Three Kids Farm',
       'mode-toggle-label': 'Dark Mode',
-      'farm-name': 'Se-Ai Farm Smart Farm',
+      'farm-name': 'Three Kids Farm',
       'farm-inquiry': 'Agricultural Products Smart Farm Inquiry',
       'slogan-1': 'Fresh Agricultural Products & Smart Farm Solutions',
       'slogan-2': 'Premium agricultural products grown in pristine nature and state-of-the-art smart farm facilities',
