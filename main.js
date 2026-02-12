@@ -36,7 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
     'ko': {
       'title': '세아이농장 스마트팜',
       'mode-toggle-label': '다크 모드',
-      'farm-name': '세아이농장 스마트팜세아이농장',
+      'nav-home': '홈',
+      'nav-produce-sales': '농산물 판매',
+      'nav-smartfarm-consulting': '스마트팜 시설 컨설팅',
+      'nav-contact-us': '문의',
+      'farm-name': '세아이농장 스마트팜',
       'farm-inquiry': '농산물스마트팜문의',
       'slogan-1': '신선한 농산물 & 스마트팜 솔루션',
       'slogan-2': '청정 자연에서 재배한 프리미엄 농산물과 최첨단 스마트팜 시설',
@@ -58,6 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
     'en': {
       'title': 'Three Kids Farm',
       'mode-toggle-label': 'Dark Mode',
+      'nav-home': 'Home',
+      'nav-produce-sales': 'Produce Sales',
+      'nav-smartfarm-consulting': 'Smartfarm Consulting',
+      'nav-contact-us': 'Contact Us',
       'farm-name': 'Three Kids Farm',
       'farm-inquiry': 'Agricultural Products Smart Farm Inquiry',
       'slogan-1': 'Fresh Agricultural Products & Smart Farm Solutions',
