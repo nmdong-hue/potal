@@ -195,43 +195,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  analyzeImageButton.addEventListener('click', () => {
+  analyzeImageButton.addEventListener('click', async () => { // async 추가
     if (!selectedFile) {
       alert('이미지를 먼저 업로드해주세요.');
       return;
     }
 
-    // Simulate AI analysis (e.g., a 2-second delay)
-    analyzeImageButton.textContent = '분석 중...';
-    analyzeImageButton.disabled = true;
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedFile);
+    reader.onloadend = async () => {
+      const base64Image = reader.result;
 
-    setTimeout(() => {
-      const currentLang = htmlElement.lang || 'ko'; // Get current language
-      let diagnosedPest = '';
-      let suggestedControl = '';
+      analyzeImageButton.textContent = '분석 중...';
+      analyzeImageButton.disabled = true;
 
-      // Dummy results based on image name or random
-      if (selectedFile.name.toLowerCase().includes('aphid')) {
-        diagnosedPest = translations[currentLang]['pest-name'] + '진딧물';
-        suggestedControl = translations[currentLang]['control-info'] + '천연 살충제 사용 또는 무당벌레 투입';
-      } else if (selectedFile.name.toLowerCase().includes('blight')) {
-        diagnosedPest = translations[currentLang]['pest-name'] + '역병';
-        suggestedControl = translations[currentLang]['control-info'] + '감염된 식물 제거 및 살균제 살포';
-      } else {
-        diagnosedPest = translations[currentLang]['pest-name'] + '알 수 없는 병해충 (정상일 수도 있습니다)';
-        suggestedControl = translations[currentLang]['control-info'] + '추가 정보가 필요합니다. 전문가에게 문의하세요.';
+      try {
+        const response = await fetch('http://localhost:3000/analyze-image', { // 백엔드 엔드포인트
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageData: base64Image }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          const currentLang = htmlElement.lang || 'ko';
+          
+          pestName.textContent = translations[currentLang]['pest-name'] + result.pestName;
+          controlInfo.textContent = translations[currentLang]['control-info'] + result.controlInfo;
+
+          diagnosisResultTitle.style.display = 'block';
+          pestName.style.display = 'block';
+          controlInfo.style.display = 'block';
+          diagnosisResults.style.display = 'block';
+        } else {
+          alert('AI 분석 중 오류가 발생했습니다: ' + (result.error || '알 수 없는 오류'));
+          console.error('백엔드 오류:', result);
+          diagnosisResults.style.display = 'none';
+        }
+      } catch (error) {
+        alert('서버와 통신 중 오류가 발생했습니다.'); // 백엔드 서버가 실행 중인지 확인 메시지 제거
+        console.error('네트워크 또는 서버 오류:', error);
+        diagnosisResults.style.display = 'none';
+      } finally {
+        analyzeImageButton.textContent = 'AI 분석 시작';
+        analyzeImageButton.disabled = false;
       }
-
-      pestName.textContent = diagnosedPest;
-      controlInfo.textContent = suggestedControl;
-
-      diagnosisResultTitle.style.display = 'block';
-      pestName.style.display = 'block';
-      controlInfo.style.display = 'block';
-      diagnosisResults.style.display = 'block';
-
-      analyzeImageButton.textContent = 'AI 분석 시작';
-      analyzeImageButton.disabled = false;
-    }, 2000); // Simulate 2-second analysis time
+    };
   });
 });

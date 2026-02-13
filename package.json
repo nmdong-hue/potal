@@ -1,0 +1,16 @@
+{
+  "name": "potal",
+  "version": "1.0.0",
+  "description": "세아이농장 스마트팜 웹사이트",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1"
+  }
+}
