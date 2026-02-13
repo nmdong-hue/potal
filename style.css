@@ -199,3 +199,49 @@ section {
     padding: 10px;
   }
 }
+
+/* Contact Form Styles */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.contact-form label {
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form textarea {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  width: 100%;
+  box-sizing: border-box; /* Ensures padding doesn't add to the width */
+}
+
+.contact-form textarea {
+  resize: vertical; /* Allow vertical resizing only */
+  min-height: 100px;
+}
+
+.contact-form button[type="submit"] {
+  background-color: var(--button-bg-color);
+  color: var(--button-text-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  align-self: flex-start; /* Align button to the start */
+}
+
+.contact-form button[type="submit"]:hover {
+  opacity: 0.9;
+}

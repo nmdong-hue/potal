@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
       'ceo-label': '대표자',
       'location-label': '경상북도 영주시',
       'copyright': '© 2026 세아이농장 스마트팜. All rights reserved.',
+      'form-name-label': '이름:',
+      'form-email-label': '이메일:',
+      'form-message-label': '메시지:',
+      'form-submit-button': '문의 보내기',
     },
     'en': {
       'title': 'Three Kids Farm',
@@ -84,6 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
       'ceo-label': 'CEO',
       'location-label': 'Yeongju-si, Gyeongsangbuk-do',
       'copyright': '© 2026 Se-Ai Farm Smart Farm. All rights reserved.',
+      'form-name-label': 'Name:',
+      'form-email-label': 'Email:',
+      'form-message-label': 'Message:',
+      'form-submit-button': 'Send Inquiry',
     }
   };
 
