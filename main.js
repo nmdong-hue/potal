@@ -155,4 +155,83 @@ document.addEventListener('DOMContentLoaded', () => {
       modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
     }
   });
+
+  // --- Pest Diagnosis Functionality ---
+  const plantImageUpload = document.getElementById('plant-image-upload');
+  const uploadedImagePreview = document.getElementById('uploaded-image-preview');
+  const imagePreviewPlaceholder = document.querySelector('.image-preview-area p[data-key="image-preview-placeholder"]');
+  const analyzeImageButton = document.getElementById('analyze-image-button');
+  const diagnosisResults = document.getElementById('diagnosis-results');
+  const diagnosisResultTitle = document.querySelector('[data-key="diagnosis-result-title"]');
+  const pestName = document.getElementById('pest-name');
+  const controlInfo = document.getElementById('control-info');
+
+  let selectedFile = null;
+
+  plantImageUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        uploadedImagePreview.src = e.target.result;
+        uploadedImagePreview.style.display = 'block';
+        imagePreviewPlaceholder.style.display = 'none';
+        diagnosisResults.style.display = 'none'; // Hide results on new upload
+        diagnosisResultTitle.style.display = 'none';
+        pestName.style.display = 'none';
+        controlInfo.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      selectedFile = null;
+      uploadedImagePreview.src = '#';
+      uploadedImagePreview.style.display = 'none';
+      imagePreviewPlaceholder.style.display = 'block';
+      diagnosisResults.style.display = 'none';
+      diagnosisResultTitle.style.display = 'none';
+      pestName.style.display = 'none';
+      controlInfo.style.display = 'none';
+    }
+  });
+
+  analyzeImageButton.addEventListener('click', () => {
+    if (!selectedFile) {
+      alert('이미지를 먼저 업로드해주세요.');
+      return;
+    }
+
+    // Simulate AI analysis (e.g., a 2-second delay)
+    analyzeImageButton.textContent = '분석 중...';
+    analyzeImageButton.disabled = true;
+
+    setTimeout(() => {
+      const currentLang = htmlElement.lang || 'ko'; // Get current language
+      let diagnosedPest = '';
+      let suggestedControl = '';
+
+      // Dummy results based on image name or random
+      if (selectedFile.name.toLowerCase().includes('aphid')) {
+        diagnosedPest = translations[currentLang]['pest-name'] + '진딧물';
+        suggestedControl = translations[currentLang]['control-info'] + '천연 살충제 사용 또는 무당벌레 투입';
+      } else if (selectedFile.name.toLowerCase().includes('blight')) {
+        diagnosedPest = translations[currentLang]['pest-name'] + '역병';
+        suggestedControl = translations[currentLang]['control-info'] + '감염된 식물 제거 및 살균제 살포';
+      } else {
+        diagnosedPest = translations[currentLang]['pest-name'] + '알 수 없는 병해충 (정상일 수도 있습니다)';
+        suggestedControl = translations[currentLang]['control-info'] + '추가 정보가 필요합니다. 전문가에게 문의하세요.';
+      }
+
+      pestName.textContent = diagnosedPest;
+      controlInfo.textContent = suggestedControl;
+
+      diagnosisResultTitle.style.display = 'block';
+      pestName.style.display = 'block';
+      controlInfo.style.display = 'block';
+      diagnosisResults.style.display = 'block';
+
+      analyzeImageButton.textContent = 'AI 분석 시작';
+      analyzeImageButton.disabled = false;
+    }, 2000); // Simulate 2-second analysis time
+  });
 });
