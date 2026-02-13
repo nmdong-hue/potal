@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
 
         const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 
-        const prompt = "This is an image of a plant. Please identify any pests or diseases present in the image and suggest control measures. Provide the pest/disease name and control measures separately. If healthy, state 'Healthy plant'.";
+        const prompt = "This is an image of a plant. Please identify any pests or diseases present in the image and suggest control measures. Provide the response in the following format:\n\nPest/Disease Name: [Pest/Disease Name or 'Healthy plant']\nControl Measures: [Control measures or 'None needed']\n\nIf healthy, simply state 'Healthy plant' for Pest/Disease Name and 'None needed' for Control Measures.";
         const image = {
             inlineData: {
                 data: imageData.split(',')[1],
@@ -43,26 +43,21 @@ export async function onRequestPost(context) {
         let pestName = "알 수 없음";
         let controlInfo = "정보 없음";
 
-        // 간단한 파싱 로직 (실제 응답 형식에 따라 더 정교하게 파싱해야 함)
-        if (text.includes("Pest/Disease Name:")) {
-            const nameMatch = text.match(/Pest\/Disease Name:\s*(.*)/i);
-            if (nameMatch && nameMatch[1]) {
-                pestName = nameMatch[1].trim();
-            }
-        } else if (text.includes("Healthy plant")) {
-            pestName = "건강한 식물";
-            controlInfo = "특별한 조치가 필요 없습니다.";
+        const pestNameMatch = text.match(/Pest\/Disease Name:\s*(.*)/i);
+        if (pestNameMatch && pestNameMatch[1]) {
+            pestName = pestNameMatch[1].trim();
+        }
+
+        const controlInfoMatch = text.match(/Control Measures:\s*(.*)/i);
+        if (controlInfoMatch && controlInfoMatch[1]) {
+            controlInfo = controlInfoMatch[1].trim();
         }
         
-        if (text.includes("Control Measures:")) {
-            const controlMatch = text.match(/Control Measures:\s*(.*)/i);
-            if (controlMatch && controlMatch[1]) {
-                controlInfo = controlMatch[1].trim();
-            }
-        } else if (text.includes("Suggested Control:")) { // 다른 키워드도 고려
-            const controlMatch = text.match(/Suggested Control:\s*(.*)/i);
-            if (controlMatch && controlMatch[1]) {
-                controlInfo = controlMatch[1].trim();
+        // "Healthy plant"의 경우 특별 처리
+        if (pestName.toLowerCase() === "healthy plant") {
+            pestName = "건강한 식물";
+            if (controlInfo.toLowerCase() === "none needed") {
+                controlInfo = "특별한 조치가 필요 없습니다.";
             }
         }
 
