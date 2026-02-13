@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('main.js loaded and DOMContentLoaded event listener added.');
+
   const modeToggle = document.getElementById('mode-toggle');
   const languageSwitcher = document.getElementById('language-switcher');
   const htmlElement = document.documentElement;
@@ -166,6 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const diagnosisResultTitle = document.querySelector('[data-key="diagnosis-result-title"]');
   const pestName = document.getElementById('pest-name');
   const controlInfo = document.getElementById('control-info');
+
+  console.log('plantImageUpload element:', plantImageUpload); // 디버깅용
+  console.log('uploadButtonLabel element:', uploadButtonLabel); // 디버깅용
 
   let selectedFile = null;
 
