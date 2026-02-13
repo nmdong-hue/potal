@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Dark/Light Mode ---
   const currentTheme = localStorage.getItem('theme');
       if (currentTheme) {
-        document.body.classList.add(currentTheme); // Changed from htmlElement
+        document.body.classList.add(currentTheme);
         if (currentTheme === 'dark-mode') {
           modeToggle.textContent = '라이트 모드';
         } else {
@@ -14,19 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         // Default to light mode and set button text
-        document.body.classList.add('light-mode'); // Changed from htmlElement
+        document.body.classList.add('light-mode');
         modeToggle.textContent = '다크 모드';
       }
   
       modeToggle.addEventListener('click', () => {
-        if (document.body.classList.contains('dark-mode')) { // Changed from htmlElement
-          document.body.classList.remove('dark-mode'); // Changed from htmlElement
-          document.body.classList.add('light-mode'); // Changed from htmlElement
+        if (document.body.classList.contains('dark-mode')) {
+          document.body.classList.remove('dark-mode');
+          document.body.classList.add('light-mode');
           localStorage.setItem('theme', 'light-mode');
           modeToggle.textContent = '다크 모드';
         } else {
-          document.body.classList.remove('light-mode'); // Changed from htmlElement
-          document.body.classList.add('dark-mode'); // Changed from htmlElement
+          document.body.classList.remove('light-mode');
+          document.body.classList.add('dark-mode');
           localStorage.setItem('theme', 'dark-mode');
           modeToggle.textContent = '라이트 모드';
         }
@@ -105,9 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     htmlElement.lang = lang;
     if (lang === 'en') {
-      modeToggle.textContent = htmlElement.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+      modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
     } else { // ko
-      modeToggle.textContent = htmlElement.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
+      modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
     }
   };
 
@@ -125,9 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
   modeToggle.addEventListener('click', () => {
     const currentLang = htmlElement.lang;
     if (currentLang === 'en') {
-      modeToggle.textContent = htmlElement.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+      modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
     } else { // ko
-      modeToggle.textContent = htmlElement.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
+      modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
     }
   });
 });

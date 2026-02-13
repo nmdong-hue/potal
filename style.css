@@ -13,9 +13,9 @@ body {
   --background-color: #ffffff;
   --text-color: #333333;
   --header-bg-color: #f0f0f0;
-  --button-bg-color: #007bff;
+  --button-bg-color: #8fbc8f;
   --button-text-color: #ffffff;
-  --link-color: #007bff;
+  --link-color: #66bb6a;
   --content-bg-color: #f9f9f9;
   --border-color: #e0e0e0;
 }
@@ -25,9 +25,9 @@ body.dark-mode {
   --background-color: #333333;
   --text-color: #ffffff;
   --header-bg-color: #222222;
-  --button-bg-color: #1a73e8;
+  --button-bg-color: #6b8e23;
   --button-text-color: #ffffff;
-  --link-color: #8ab4f8;
+  --link-color: #9ccc65;
   --content-bg-color: #444444;
   --border-color: #555555;
 }
