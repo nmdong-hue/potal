@@ -258,5 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         analyzeImageButton.disabled = false;
       }
     };
-  });
-});
+  }); // End of analyzeImageButton event listener
+
+  // Added a dummy comment to force a Git change and trigger redeployment.
+}); // End of DOMContentLoaded event listener
