@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'diagnosis-result-title': '진단 결과:',
       'pest-name': '병해충 이름: ',
       'control-info': '방제 정보: ',
+      'ai-analysis-error': 'AI 분석 중 오류가 발생했습니다: ',
     },
     'en': {
       'title': 'Three Kids Farm',
@@ -111,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'diagnosis-result-title': 'Diagnosis Result:',
       'pest-name': 'Pest Name: ',
       'control-info': 'Control Information: ',
+      'ai-analysis-error': 'An error occurred during AI analysis: ',
     }
   };
 
@@ -245,8 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
           controlInfo.style.display = 'block';
           diagnosisResults.style.display = 'block';
         } else {
-          alert('AI 분석 중 오류가 발생했습니다: ' + (result.error || '알 수 없는 오류'));
-          console.error('백엔드 오류:', result);
+          alert(translations[currentLang]['ai-analysis-error'] + (result.error || '알 수 없는 오류'));
+          console.error('백엔드 오류:', result.error || '알 수 없는 오류', result.details ? '세부 정보: ' + result.details : '');
           diagnosisResults.style.display = 'none';
         }
       } catch (error) {
