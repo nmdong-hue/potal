@@ -74,6 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
       'pest-name': '병해충 이름: ',
       'control-info': '방제 정보: ',
       'ai-analysis-error': 'AI 분석 중 오류가 발생했습니다: ',
+      'diagnosis-result-title-popup': '진단 결과:',
+      'close-button': '닫기',
+      'network-error': '서버와 통신 중 오류가 발생했습니다.'
     },
     'en': {
       'title': 'Three Kids Farm',
@@ -113,6 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
       'pest-name': 'Pest Name: ',
       'control-info': 'Control Information: ',
       'ai-analysis-error': 'An error occurred during AI analysis: ',
+      'diagnosis-result-title-popup': 'Diagnosis Result:',
+      'close-button': 'Close',
+      'network-error': 'An error occurred while communicating with the server.'
     }
   };
 
@@ -122,7 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (translations[lang][key]) {
         if (element.tagName === 'TITLE') {
           element.textContent = translations[lang][key];
-        } else {
+        } else if (element.tagName === 'BUTTON' && key === 'close-button') {
+          element.textContent = translations[lang][key];
+        }
+        else {
           // Handle cases where the text might be inside a strong tag or directly in the element
           if (element.firstElementChild && element.firstElementChild.tagName === 'STRONG') {
             element.firstElementChild.textContent = translations[lang][key];
@@ -166,10 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const uploadedImagePreview = document.getElementById('uploaded-image-preview');
   const imagePreviewPlaceholder = document.querySelector('.image-preview-area p[data-key="image-preview-placeholder"]');
   const analyzeImageButton = document.getElementById('analyze-image-button');
-  const diagnosisResults = document.getElementById('diagnosis-results');
-  const diagnosisResultTitle = document.querySelector('[data-key="diagnosis-result-title"]');
-  const pestName = document.getElementById('pest-name');
-  const controlInfo = document.getElementById('control-info');
+  // Removed direct references to diagnosisResults, diagnosisResultTitle, pestName, controlInfo as they are no longer used for inline display.
+  
+  // New modal elements
+  const diagnosisModal = document.getElementById('diagnosis-modal');
+  const closeButton = document.querySelector('.close-button');
+  const popupPestName = document.getElementById('popup-pest-name');
+  const popupControlInfo = document.getElementById('popup-control-info');
 
   console.log('plantImageUpload element:', plantImageUpload); // 디버깅용
   console.log('uploadButtonLabel element:', uploadButtonLabel); // 디버깅용
@@ -192,10 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadedImagePreview.src = e.target.result;
         uploadedImagePreview.style.display = 'block';
         imagePreviewPlaceholder.style.display = 'none';
-        diagnosisResults.style.display = 'none'; // Hide results on new upload
-        diagnosisResultTitle.style.display = 'none';
-        pestName.style.display = 'none';
-        controlInfo.style.display = 'none';
+        
+        // Hide popup diagnosis results when a new image is uploaded
+        diagnosisModal.style.display = 'none'; 
       };
       reader.readAsDataURL(file);
     } else {
@@ -204,10 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadedImagePreview.alt = '업로드된 이미지 미리보기'; // Reset alt text
       uploadedImagePreview.style.display = 'none';
       imagePreviewPlaceholder.style.display = 'block';
-      diagnosisResults.style.display = 'none';
-      diagnosisResultTitle.style.display = 'none';
-      pestName.style.display = 'none';
-      controlInfo.style.display = 'none';
+      diagnosisModal.style.display = 'none';
     }
   });
 
@@ -239,27 +247,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response.ok) {
           const currentLang = htmlElement.lang || 'ko';
           
-          pestName.textContent = translations[currentLang]['pest-name'] + result.pestName;
-          controlInfo.textContent = translations[currentLang]['control-info'] + result.controlInfo;
+          popupPestName.textContent = translations[currentLang]['pest-name'] + result.pestName;
+          popupControlInfo.textContent = translations[currentLang]['control-info'] + result.controlInfo;
 
-          diagnosisResultTitle.style.display = 'block';
-          pestName.style.display = 'block';
-          controlInfo.style.display = 'block';
-          diagnosisResults.style.display = 'block';
+          diagnosisModal.style.display = 'flex'; // Show the modal
         } else {
+          const currentLang = htmlElement.lang || 'ko';
           alert(translations[currentLang]['ai-analysis-error'] + (result.error || '알 수 없는 오류'));
           console.error('백엔드 오류:', result.error || '알 수 없는 오류', result.details ? '세부 정보: ' + result.details : '');
-          diagnosisResults.style.display = 'none';
+          diagnosisModal.style.display = 'none';
         }
       } catch (error) {
-        alert('서버와 통신 중 오류가 발생했습니다.');
+        const currentLang = htmlElement.lang || 'ko';
+        alert(translations[currentLang]['network-error']); // Use translated network error message
         console.error('네트워크 또는 서버 오류:', error);
-        diagnosisResults.style.display = 'none';
+        diagnosisModal.style.display = 'none';
       } finally {
         analyzeImageButton.textContent = 'AI 분석 시작';
         analyzeImageButton.disabled = false;
       }
     };
+  });
+
+  // Close the modal when the close button is clicked
+  closeButton.addEventListener('click', () => {
+    diagnosisModal.style.display = 'none';
+  });
+
+  // Close the modal when clicking outside of the modal content
+  window.addEventListener('click', (event) => {
+    if (event.target == diagnosisModal) {
+      diagnosisModal.style.display = 'none';
+    }
   }); // End of analyzeImageButton event listener
 
   // Added a dummy comment to force a Git change and trigger redeployment.
