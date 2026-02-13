@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Pest Diagnosis Functionality ---
   const plantImageUpload = document.getElementById('plant-image-upload');
+  const uploadButtonLabel = document.querySelector('label[for="plant-image-upload"]'); // <label> 요소 선택
   const uploadedImagePreview = document.getElementById('uploaded-image-preview');
   const imagePreviewPlaceholder = document.querySelector('.image-preview-area p[data-key="image-preview-placeholder"]');
   const analyzeImageButton = document.getElementById('analyze-image-button');
@@ -167,6 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const controlInfo = document.getElementById('control-info');
 
   let selectedFile = null;
+
+  // 명시적으로 label 클릭 시 input 클릭 트리거
+  if (uploadButtonLabel) {
+    uploadButtonLabel.addEventListener('click', () => {
+      plantImageUpload.click();
+    });
+  }
 
   plantImageUpload.addEventListener('change', (event) => {
     const file = event.target.files[0];
@@ -185,7 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
       reader.readAsDataURL(file);
     } else {
       selectedFile = null;
-      uploadedImagePreview.src = '#';
+      uploadedImagePreview.removeAttribute('src'); // Clear image source
+      uploadedImagePreview.alt = '업로드된 이미지 미리보기'; // Reset alt text
       uploadedImagePreview.style.display = 'none';
       imagePreviewPlaceholder.style.display = 'block';
       diagnosisResults.style.display = 'none';
@@ -210,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
       analyzeImageButton.disabled = true;
 
       try {
-        const response = await fetch('http://localhost:3000/analyze-image', { // 백엔드 엔드포인트
+        const response = await fetch('/functions/analyze-image', { // Cloudflare Functions 엔드포인트
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -236,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
           diagnosisResults.style.display = 'none';
         }
       } catch (error) {
-        alert('서버와 통신 중 오류가 발생했습니다.'); // 백엔드 서버가 실행 중인지 확인 메시지 제거
+        alert('서버와 통신 중 오류가 발생했습니다.');
         console.error('네트워크 또는 서버 오류:', error);
         diagnosisResults.style.display = 'none';
       } finally {
