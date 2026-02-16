@@ -43,9 +43,9 @@ export async function onRequestPost(context) {
         const mimeTypeMatch = imageData.split(',')[0].split(':')[1].split(';')[0];
         const base64Data = imageData.split(',')[1];
 
-        // Gemini 1.0 Pro Vision 모델을 직접 호출
+        // Gemini Pro Vision 모델을 직접 호출
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro-vision:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: {
