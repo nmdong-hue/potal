@@ -72,7 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
       'record-confidence': '신뢰도:',
       'record-recommendations': '권장 조치:',
       'record-notes': '추가 참고사항:',
-      'record-timestamp': '진단 시간:'
+      'record-timestamp': '진단 시간:',
+      'no-recent-records': '최근 진단 기록이 없습니다.',
+      'error-loading-records': '진단 기록을 불러올 수 없습니다.',
+      'refresh-records-button': '기록 새로고침',
+      'delete-record-button': '삭제',
+      'confirm-delete-record': '이 진단 기록을 삭제하시겠습니까?'
     },
     'en': {
       'title-diagnosis': 'Pest AI Diagnosis',
@@ -110,7 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
       'record-confidence': 'Confidence:',
       'record-recommendations': 'Recommendations:',
       'record-notes': 'Additional Notes:',
-      'record-timestamp': 'Diagnosis Time:'
+      'record-timestamp': 'Diagnosis Time:',
+      'no-recent-records': 'No recent diagnosis records.',
+      'error-loading-records': 'Failed to load diagnosis records.',
+      'refresh-records-button': 'Refresh Records',
+      'delete-record-button': 'Delete',
+      'confirm-delete-record': 'Are you sure you want to delete this diagnosis record?'
     }
   };
 
@@ -175,19 +185,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const diagnosisResultsDiv = document.getElementById('diagnosis-results');
   const pestNameDisplay = document.getElementById('pest-name');
-  // New detailed result displays
-  const confidenceDisplay = document.createElement('p');
-  confidenceDisplay.id = 'confidence';
-  const recommendationsDisplay = document.createElement('p');
-  recommendationsDisplay.id = 'recommendations';
-  const notesDisplay = document.createElement('p');
-  notesDisplay.id = 'notes';
+  // New detailed result displays - ensure they are always present
+  let confidenceDisplay = document.getElementById('confidence');
+  if (!confidenceDisplay) {
+      confidenceDisplay = document.createElement('p');
+      confidenceDisplay.id = 'confidence';
+      diagnosisResultsDiv.appendChild(confidenceDisplay);
+  }
+  let recommendationsDisplay = document.getElementById('recommendations');
+  if (!recommendationsDisplay) {
+      recommendationsDisplay = document.createElement('p');
+      recommendationsDisplay.id = 'recommendations';
+      diagnosisResultsDiv.appendChild(recommendationsDisplay);
+  }
+  let notesDisplay = document.getElementById('notes');
+  if (!notesDisplay) {
+      notesDisplay = document.createElement('p');
+      notesDisplay.id = 'notes';
+      diagnosisResultsDiv.appendChild(notesDisplay);
+  }
   const controlInfoDisplay = document.getElementById('control-info'); // Keep existing for general control info
-
-  // Append new elements to diagnosisResultsDiv if they aren't already there
-  if (!document.getElementById('confidence')) diagnosisResultsDiv.appendChild(confidenceDisplay);
-  if (!document.getElementById('recommendations')) diagnosisResultsDiv.appendChild(recommendationsDisplay);
-  if (!document.getElementById('notes')) diagnosisResultsDiv.appendChild(notesDisplay);
 
   pestNameDisplay.textContent = '';
   confidenceDisplay.textContent = '';
@@ -196,7 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
   controlInfoDisplay.textContent = '';
   
   const recentDiagnosisRecordsList = document.getElementById('recent-diagnosis-records-list');
-  
+  const refreshRecordsButton = document.getElementById('refresh-records-button'); // Get refresh button
+
+  // Event listener for refresh button
+  if (refreshRecordsButton) {
+      refreshRecordsButton.addEventListener('click', fetchRecentDiagnosisRecords);
+  }
+
   let selectedFile = null;
 
   if (uploadButtonLabel) {
@@ -273,19 +296,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const result = await response.json();
+        console.log('API Analysis Result:', result); // Log the full result for debugging
 
         if (response.ok) {
           const currentLang = htmlElement.lang || 'ko';
           
           // Displaying new detailed fields
-          pestNameDisplay.textContent = translations[currentLang]['pest-name'] + result.pestName;
-          confidenceDisplay.textContent = translations[currentLang]['confidence'] + result.confidence;
-          recommendationsDisplay.textContent = translations[currentLang]['recommendations'] + result.recommendations;
-          notesDisplay.textContent = translations[currentLang]['notes'] + result.notes;
-          // controlInfoDisplay can be set from result.controlInfo if it's still distinct,
-          // otherwise it might be part of recommendations. For now, set it if provided.
+          pestNameDisplay.textContent = translations[currentLang]['pest-name'] + (result.pestName || 'N/A');
+          
+          // Format confidence as percentage
+          let confidenceText = result.confidence || 'N/A';
+          if (confidenceText !== 'N/A' && !isNaN(parseFloat(confidenceText))) {
+            confidenceText = parseFloat(confidenceText) + '%';
+          }
+          confidenceDisplay.textContent = translations[currentLang]['confidence'] + confidenceText;
+          
+          recommendationsDisplay.textContent = translations[currentLang]['recommendations'] + (result.recommendations || 'N/A');
+          notesDisplay.textContent = translations[currentLang]['notes'] + (result.notes || 'N/A');
+          
           if (result.controlInfo) {
-            controlInfoDisplay.textContent = translations[currentLang]['control-info'] + result.controlInfo;
+            controlInfoDisplay.textContent = translations[currentLang]['control-info'] + (result.controlInfo || 'N/A');
           } else {
             controlInfoDisplay.textContent = ''; // Clear if not provided
           }
@@ -369,20 +399,34 @@ document.addEventListener('DOMContentLoaded', () => {
           recordElement.classList.add('diagnosis-record-item');
           
           let imagePreviewHtml = '';
-          if (record.image_data_preview) {
-              imagePreviewHtml = `<img src="data:image/jpeg;base64,${record.image_data_preview}..." alt="진단 이미지 미리보기" style="width: 100px; height: auto; margin-bottom: 10px;">`;
+          if (record.image_data_preview && record.image_data_preview.length > 50) {
+              imagePreviewHtml = `<img src="data:image/jpeg;base64,${record.image_data_preview}" alt="진단 이미지 미리보기" style="width: 100px; height: auto; margin-bottom: 10px;">`;
+          }
+
+          // Format confidence as percentage for records display
+          let recordConfidenceText = record.confidence || 'N/A';
+          if (recordConfidenceText !== 'N/A' && !isNaN(parseFloat(recordConfidenceText))) {
+            recordConfidenceText = parseFloat(recordConfidenceText) + '%';
           }
 
           recordElement.innerHTML = `
             ${imagePreviewHtml}
             <p><strong>${translations[htmlElement.lang || 'ko']['record-crop']}</strong> ${record.crop_name}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-pest']}</strong> ${record.pest_name}</p>
-            <p><strong>${translations[htmlElement.lang || 'ko']['record-confidence']}</strong> ${record.confidence || 'N/A'}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-confidence']}</strong> ${recordConfidenceText}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-recommendations']}</strong> ${record.recommendations || 'N/A'}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-notes']}</strong> ${record.notes || 'N/A'}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-timestamp']}</strong> ${new Date(record.timestamp).toLocaleString()}</p>
+            <button class="delete-record-button" data-id="${record.id}">${translations[htmlElement.lang || 'ko']['delete-record-button']}</button>
           `;
           recentDiagnosisRecordsList.appendChild(recordElement);
+        });
+        // Add event listeners to delete buttons after they are added to the DOM
+        document.querySelectorAll('.delete-record-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const recordId = event.target.dataset.id;
+                handleDeleteRecord(recordId);
+            });
         });
       } else {
         recentDiagnosisRecordsList.innerHTML = `<p>${translations[htmlElement.lang || 'ko']['no-recent-records'] || '최근 진단 기록이 없습니다.'}</p>`;
@@ -391,6 +435,32 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('최근 진단 기록을 불러오는 중 오류 발생:', error);
       recentDiagnosisRecordsList.innerHTML = `<p>${translations[htmlElement.lang || 'ko']['error-loading-records'] || '진단 기록을 불러올 수 없습니다.'}</p>`;
     }
+  }
+
+  // Function to handle record deletion
+  async function handleDeleteRecord(recordId) {
+      const currentLang = htmlElement.lang || 'ko';
+      if (!confirm(translations[currentLang]['confirm-delete-record'])) {
+          return;
+      }
+
+      try {
+          const response = await fetch(`/api/diagnosis-records/${recordId}`, {
+              method: 'DELETE',
+          });
+
+          if (response.ok) {
+              console.log(`기록 (ID: ${recordId})이 성공적으로 삭제되었습니다.`);
+              fetchRecentDiagnosisRecords(); // Refresh records list
+          } else {
+              const result = await response.json();
+              alert(`기록 삭제에 실패했습니다: ${result.error || '알 수 없는 오류'}`);
+              console.error('기록 삭제 백엔드 오류:', result.error || '알 수 없는 오류');
+          }
+      } catch (error) {
+          alert('네트워크 오류로 기록 삭제에 실패했습니다.');
+          console.error('네트워크 또는 서버 오류:', error);
+      }
   }
 
   fetchRecentDiagnosisRecords();
