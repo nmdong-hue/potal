@@ -440,3 +440,44 @@ section {
   background-color: transparent;
   border: none;
 }
+
+/* Fresh Healthy Food Gallery Styles */
+.fresh-healthy-food-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px; /* Space between images */
+  margin-top: 20px;
+}
+
+.fresh-healthy-food-gallery p {
+  flex: 1 1 calc(33% - 40px); /* Roughly three items per row, accounting for gap */
+  max-width: calc(33% - 40px); /* Ensure max width for larger screens */
+  text-align: center;
+  background-color: transparent; /* Override parent p styling */
+  border: none; /* Override parent p styling */
+  padding: 0;
+}
+
+.fresh-healthy-food-gallery img {
+  max-width: 100%;
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Remove extra space below image */
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .fresh-healthy-food-gallery p {
+    flex: 1 1 calc(50% - 20px); /* Two items per row on tablets */
+    max-width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 480px) {
+  .fresh-healthy-food-gallery p {
+    flex: 1 1 100%; /* One item per row on mobile */
+    max-width: 100%;
+  }
+}
