@@ -17,10 +17,10 @@
     </div>
     <nav>
       <ul>
-        <li><a href="#home" data-key="nav-home">Home</a></li>
+        <li><a href="/" data-key="nav-home">Home</a></li>
         <li><a href="#produce-sales-section" data-key="nav-produce-sales">농산물 판매</a></li>
         <li><a href="#smartfarm-consulting-section" data-key="nav-smartfarm-consulting">스마트팜 시설 컨설팅</a></li>
-        <li><a href="#pest-diagnosis-section" data-key="nav-pest-diagnosis">병해충 진단</a></li>
+        <li><a href="/diagnosis.html" data-key="nav-pest-diagnosis">병해충 AI 진단</a></li>
         <li><a href="#contact-us-section" data-key="nav-contact-us">문의</a></li>
       </ul>
     </nav>
@@ -50,34 +50,6 @@
       <p data-key="efficient-agri">최신 기술로 효율적인 농업</p>
       <p><strong><span data-key="remote-monitoring">원격 모니터링</span></strong></p>
       <p data-key="energy-management">에너지 관리</p>
-    </section>
-
-    <section id="pest-diagnosis-section">
-      <h3 data-key="pest-diagnosis-title">병해충 진단</h3>
-      <p data-key="pest-diagnosis-description">
-        작물 이미지를 업로드하여 병해충을 진단하고 방제 정보를 받아보세요.
-      </p>
-      <div class="image-upload-container">
-        <select id="crop-select" data-key="crop-select-label">
-          <option value="">-- 작물을 선택하세요 --</option>
-          <option value="pepper">고추</option>
-          <option value="tomato">토마토</option>
-          <option value="cucumber">오이</option>
-          <option value="potato">감자</option>
-        </select>
-        <input type="file" id="plant-image-upload" accept="image/*">
-        <label for="plant-image-upload" class="upload-button" data-key="upload-image-button">이미지 업로드</label>
-        <div class="image-preview-area">
-          <img id="uploaded-image-preview" src="#" alt="업로드된 이미지 미리보기" style="display: none;">
-          <p data-key="image-preview-placeholder">이미지 미리보기</p>
-        </div>
-        <button id="analyze-image-button" data-key="analyze-image-button">AI 분석 시작</button>
-      </div>
-      <div id="diagnosis-results" class="diagnosis-results">
-        <h4 data-key="diagnosis-result-title">진단 결과:</h4>
-        <p id="pest-name" data-key="pest-name"></p>
-        <p id="control-info" data-key="control-info"></p>
-      </div>
     </section>
 
     <section id="contact-us-section">
