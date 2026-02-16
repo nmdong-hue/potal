@@ -104,12 +104,17 @@ export async function onRequestPost(context) {
         }
 
         let fullResponseText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        console.log('Raw Gemini fullResponseText:', fullResponseText); // Raw response for debugging
         
-        // Gemini의 응답이 마크다운 코드 블록으로 래핑되어 있을 경우, JSON만 추출
-        const jsonMatch = fullResponseText.match(/```json\n([\s\S]*?)\n```/);
-        if (jsonMatch && jsonMatch[1]) {
-            fullResponseText = jsonMatch[1];
+        // Gemini의 응답이 마크다운 코드 블록으로 래핑되어 있을 경우, JSON만 추출 (더 견고하게)
+        let jsonPayload = fullResponseText;
+        const jsonStart = fullResponseText.indexOf('```json');
+        const jsonEnd = fullResponseText.lastIndexOf('```');
+
+        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+            jsonPayload = fullResponseText.substring(jsonStart + '```json'.length, jsonEnd).trim();
         }
+        console.log('Extracted JSON payload:', jsonPayload); // Log extracted JSON
 
         let pestName = "정보 없음";
         let confidence = "정보 없음";
@@ -119,7 +124,7 @@ export async function onRequestPost(context) {
 
         // Gemini의 응답이 JSON 형식이라고 가정하고 파싱
         try {
-            const parsedResult = JSON.parse(fullResponseText);
+            const parsedResult = JSON.parse(jsonPayload); // Extracted payload 사용
             pestName = parsedResult.pestName || pestName;
             confidence = parsedResult.confidence || confidence;
             recommendations = parsedResult.recommendations || recommendations;
@@ -128,6 +133,7 @@ export async function onRequestPost(context) {
         } catch (jsonError) {
             console.error('Gemini 응답 JSON 파싱 오류:', jsonError);
             console.error('파싱 실패 원본 응답:', fullResponseText); // 원본 응답 로깅
+            console.error('파싱 실패 시도된 JSON 페이로드:', jsonPayload); // 시도된 페이로드 로깅
             // JSON 파싱 실패 시, 원시 텍스트에서 기본 파싱 시도 (이전 로직)
             const pestNameMatch = fullResponseText.match(/병해충 이름:\s*(.*)/i);
             if (pestNameMatch && pestNameMatch[1]) {
@@ -141,7 +147,7 @@ export async function onRequestPost(context) {
         }
         
         // "건강한 식물"의 경우 특별 처리 (JSON 파싱 후에도 적용)
-        if (pestName.includes("건강한 식물")) { // toLowerCase() 제거
+        if (pestName.includes("건강한 식물")) {
             confidence = confidence.includes("필요 없음") || confidence.includes("정보 없음") ? "100% (매우 높음)" : confidence;
             recommendations = recommendations.includes("필요 없음") || recommendations.includes("정보 없음") ? "특별한 조치가 필요 없습니다." : recommendations;
             notes = notes.includes("특이사항 없음") || notes.includes("정보 없음") ? "특이사항 없음" : notes;

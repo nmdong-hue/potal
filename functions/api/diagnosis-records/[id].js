@@ -1,5 +1,6 @@
 // functions/api/delete-record.js
 export async function onRequestDelete(context) {
+    console.log('onRequestDelete function triggered for record ID:', context.params.id); // Add log at the beginning
     const { request, env, params } = context;
     const DB = env.DB;
 
