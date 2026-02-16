@@ -71,7 +71,7 @@ export async function onRequestPost(context) {
                                     }
 
                                     만약 건강한 식물이라면 "pestName"에 '건강한 식물'을, "confidence"에 '100% (매우 높음)', "recommendations"에 '필요 없음', "notes"에 '특이사항 없음'이라고만 적어주세요.
-                                    응답은 반드시 JSON 객체만 포함해야 하며, 마크다운(```json)으로 래핑하지 마세요.
+                                    응답은 반드시 JSON 객체만 포함해야 하며, 마크다운(\`\`\`json)으로 래핑하지 마세요.
                                     `
                                 },
                                 {
