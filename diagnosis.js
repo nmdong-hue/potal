@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>${translations[htmlElement.lang || 'ko']['record-confidence']}</strong> ${recordConfidenceText}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-recommendations']}</strong> ${record.recommendations || 'N/A'}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-notes']}</strong> ${record.notes || 'N/A'}</p>
-            <p><strong>${translations[htmlElement.lang || 'ko']['record-timestamp']}</strong> ${new Date(record.timestamp).toLocaleString()}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-timestamp']}</strong> ${new Date(record.timestamp).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</p>
             <button class="delete-record-button" data-id="${record.id}">${translations[htmlElement.lang || 'ko']['delete-record-button']}</button>
           `;
           recentDiagnosisRecordsList.appendChild(recordElement);
