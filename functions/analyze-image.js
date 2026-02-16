@@ -71,6 +71,7 @@ export async function onRequestPost(context) {
                                     }
 
                                     만약 건강한 식물이라면 "pestName"에 '건강한 식물'을, "confidence"에 '100% (매우 높음)', "recommendations"에 '필요 없음', "notes"에 '특이사항 없음'이라고만 적어주세요.
+                                    응답은 반드시 JSON 객체만 포함해야 하며, 마크다운(```json)으로 래핑하지 마세요.
                                     `
                                 },
                                 {
@@ -102,8 +103,14 @@ export async function onRequestPost(context) {
             });
         }
 
-        const fullResponseText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        let fullResponseText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
         
+        // Gemini의 응답이 마크다운 코드 블록으로 래핑되어 있을 경우, JSON만 추출
+        const jsonMatch = fullResponseText.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch && jsonMatch[1]) {
+            fullResponseText = jsonMatch[1];
+        }
+
         let pestName = "정보 없음";
         let confidence = "정보 없음";
         let recommendations = "정보 없음";
@@ -117,10 +124,10 @@ export async function onRequestPost(context) {
             confidence = parsedResult.confidence || confidence;
             recommendations = parsedResult.recommendations || recommendations;
             notes = parsedResult.notes || notes;
-            // 기존 controlInfo는 recommendations와 동일하게 설정하거나, 별도의 일반 방제 정보가 필요하면 해당 필드를 추가
             controlInfo = recommendations; 
         } catch (jsonError) {
             console.error('Gemini 응답 JSON 파싱 오류:', jsonError);
+            console.error('파싱 실패 원본 응답:', fullResponseText); // 원본 응답 로깅
             // JSON 파싱 실패 시, 원시 텍스트에서 기본 파싱 시도 (이전 로직)
             const pestNameMatch = fullResponseText.match(/병해충 이름:\s*(.*)/i);
             if (pestNameMatch && pestNameMatch[1]) {
@@ -134,10 +141,10 @@ export async function onRequestPost(context) {
         }
         
         // "건강한 식물"의 경우 특별 처리 (JSON 파싱 후에도 적용)
-        if (pestName.toLowerCase().includes("건강한 식물")) {
-            confidence = confidence.toLowerCase().includes("필요 없음") || confidence.toLowerCase().includes("정보 없음") ? "100% (매우 높음)" : confidence;
-            recommendations = recommendations.toLowerCase().includes("필요 없음") || recommendations.toLowerCase().includes("정보 없음") ? "특별한 조치가 필요 없습니다." : recommendations;
-            notes = notes.toLowerCase().includes("특이사항 없음") || notes.toLowerCase().includes("정보 없음") ? "특이사항 없음" : notes;
+        if (pestName.includes("건강한 식물")) { // toLowerCase() 제거
+            confidence = confidence.includes("필요 없음") || confidence.includes("정보 없음") ? "100% (매우 높음)" : confidence;
+            recommendations = recommendations.includes("필요 없음") || recommendations.includes("정보 없음") ? "특별한 조치가 필요 없습니다." : recommendations;
+            notes = notes.includes("특이사항 없음") || notes.includes("정보 없음") ? "특이사항 없음" : notes;
             controlInfo = recommendations; // 기존 controlInfo도 업데이트
         }
 
