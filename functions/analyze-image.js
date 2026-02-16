@@ -157,20 +157,25 @@ export async function onRequestPost(context) {
             controlInfo = recommendations; // 기존 controlInfo도 업데이트
         }
 
-                    // --- 분석 기록 저장 ---
-                    try {
-                        // resizedImageBase64에서 'data:image/jpeg;base64,' 부분을 제외한 순수 base64 데이터만 저장
-                        const imageDataPreview = base64DataStripped;
-        
-                        // 현재 서울 시간을 타임스탬프 문자열로 생성
-                        const now = new Date();
-                        const formattedSeoulTimestamp = now.toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }); // ISO-like string for database
-        
-                        await DB.prepare(
-                            `INSERT INTO analysis_records (timestamp, crop_name, image_data_preview, mime_type, pest_name, confidence, recommendations, notes, control_info, full_gemini_response)
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-                        ).bind(formattedSeoulTimestamp, cropName, imageDataPreview, mimeTypeToStore, pestName, confidence, recommendations, notes, controlInfo, fullResponseText)
-                        .run();            console.log('분석 기록이 D1에 성공적으로 저장되었습니다.');
+                                // --- 분석 기록 저장 ---
+
+                                try {
+
+                                    // resizedImageBase64에서 'data:image/jpeg;base64,' 부분을 제외한 순수 base64 데이터만 저장
+
+                                    const imageDataPreview = base64DataStripped; 
+
+                    
+
+                                    await DB.prepare(
+
+                                        `INSERT INTO analysis_records (crop_name, image_data_preview, mime_type, pest_name, confidence, recommendations, notes, control_info, full_gemini_response)
+
+                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+                                    ).bind(cropName, imageDataPreview, mimeTypeToStore, pestName, confidence, recommendations, notes, controlInfo, fullResponseText)
+
+                                    .run();            console.log('분석 기록이 D1에 성공적으로 저장되었습니다.');
         } catch (dbError) {
             console.error('D1 데이터베이스 저장 중 오류 발생:', dbError);
             // 데이터베이스 저장 오류가 진단 결과 반환을 막지는 않음
