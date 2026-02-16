@@ -43,9 +43,9 @@ export async function onRequestPost(context) {
         const mimeTypeMatch = imageData.split(',')[0].split(':')[1].split(';')[0];
         const base64Data = imageData.split(',')[1];
 
-        // Gemini 1.5 Flash 모델을 직접 호출
+        // Gemini 1.5 Flash Latest 모델을 직접 호출
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1alpha/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1alpha/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: {
@@ -92,7 +92,7 @@ export async function onRequestPost(context) {
         let pestName = "알 수 없음";
         let controlInfo = "정보 없음";
 
-        // Gemini 1.5 Flash의 응답에서 '병해충 이름:'과 '방제 방법:'을 파싱
+        // Gemini 1.5 Flash Latest의 응답에서 '병해충 이름:'과 '방제 방법:'을 파싱
         const pestNameMatch = fullResponseText.match(/병해충 이름:\s*(.*)/i);
         if (pestNameMatch && pestNameMatch[1]) {
             pestName = pestNameMatch[1].trim();
