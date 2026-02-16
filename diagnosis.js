@@ -446,7 +446,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>${translations[htmlElement.lang || 'ko']['record-confidence']}</strong> ${recordConfidenceText}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-recommendations']}</strong> ${record.recommendations || 'N/A'}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-notes']}</strong> ${record.notes || 'N/A'}</p>
-            <p><strong>${translations[htmlElement.lang || 'ko']['record-timestamp']}</strong> ${new Date(record.timestamp).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-timestamp']}</strong> ${(() => {
+                const timestampStr = record.timestamp;
+                const utcTimestampString = timestampStr.endsWith('Z') || timestampStr.includes('+') || (timestampStr.includes('-') && timestampStr.indexOf('T') !== -1)
+                    ? timestampStr
+                    : `${timestampStr}Z`; // Assume UTC if no timezone info, append 'Z'
+                return new Date(utcTimestampString).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+            })()}</p>
             <button class="delete-record-button" data-id="${record.id}">${translations[htmlElement.lang || 'ko']['delete-record-button']}</button>
           `;
           recentDiagnosisRecordsList.appendChild(recordElement);
