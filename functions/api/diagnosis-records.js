@@ -13,7 +13,7 @@ export async function onRequestGet(context) {
     try {
         // 최근 10개의 진단 기록을 가져옵니다. 필요에 따라 제한 수를 조절할 수 있습니다.
         const { results } = await DB.prepare(
-            `SELECT id, timestamp, crop_name, image_data_preview, pest_name, confidence, recommendations, notes, control_info
+            `SELECT id, timestamp, crop_name, image_data_preview, mime_type, pest_name, confidence, recommendations, notes, control_info
              FROM analysis_records 
              ORDER BY timestamp DESC 
              LIMIT 10`

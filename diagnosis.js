@@ -206,30 +206,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const controlInfoDisplay = document.getElementById('control-info'); // Keep existing for general control info
 
-  pestNameDisplay.textContent = '';
-  confidenceDisplay.textContent = '';
-  recommendationsDisplay.textContent = '';
-  notesDisplay.textContent = '';
-  controlInfoDisplay.textContent = '';
+  // Function to clear and initialize diagnosis display fields
+  const clearDiagnosisDisplay = () => {
+    pestNameDisplay.textContent = '';
+    confidenceDisplay.textContent = '';
+    recommendationsDisplay.textContent = '';
+    notesDisplay.textContent = '';
+    controlInfoDisplay.textContent = '';
+  };
+
+  clearDiagnosisDisplay(); // Initial clear
   
   const recentDiagnosisRecordsList = document.getElementById('recent-diagnosis-records-list');
-  const refreshRecordsButton = document.getElementById('refresh-records-button'); // Get refresh button
+  const refreshRecordsButton = document.getElementById('refresh-records-button');
 
-  // Event listener for refresh button
   if (refreshRecordsButton) {
       refreshRecordsButton.addEventListener('click', fetchRecentDiagnosisRecords);
   }
 
   let selectedFile = null;
 
-  if (uploadButtonLabel) {
-    uploadButtonLabel.addEventListener('click', () => {
-      plantImageUpload.click();
-    });
-  }
-
-  plantImageUpload.addEventListener('change', (event) => {
-    const file = event.target.files[0];
+  // Function to process a selected file (from input or drag-and-drop)
+  const processSelectedFile = (file) => {
     if (file) {
       selectedFile = file;
       const reader = new FileReader();
@@ -237,12 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadedImagePreview.src = e.target.result;
         uploadedImagePreview.style.display = 'block';
         imagePreviewPlaceholder.style.display = 'none';
-        
-        pestNameDisplay.textContent = '';
-        confidenceDisplay.textContent = '';
-        recommendationsDisplay.textContent = '';
-        notesDisplay.textContent = '';
-        controlInfoDisplay.textContent = '';
+        clearDiagnosisDisplay(); // Clear results when new image is selected
       };
       reader.readAsDataURL(file);
     } else {
@@ -251,13 +244,13 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadedImagePreview.alt = '업로드된 이미지 미리보기';
       uploadedImagePreview.style.display = 'none';
       imagePreviewPlaceholder.style.display = 'block';
-      
-      pestNameDisplay.textContent = '';
-      confidenceDisplay.textContent = '';
-      recommendationsDisplay.textContent = '';
-      notesDisplay.textContent = '';
-      controlInfoDisplay.textContent = '';
+      clearDiagnosisDisplay(); // Clear results when image is cleared
     }
+  };
+
+  plantImageUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    processSelectedFile(file); // Call the shared processing function
   });
 
   analyzeImageButton.addEventListener('click', async () => {
@@ -280,11 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       analyzeImageButton.textContent = '분석 중...';
       analyzeImageButton.disabled = true;
-      pestNameDisplay.textContent = '';
-      confidenceDisplay.textContent = '';
-      recommendationsDisplay.textContent = '';
-      notesDisplay.textContent = '';
-      controlInfoDisplay.textContent = '';
+      clearDiagnosisDisplay(); // Clear results before new analysis
 
       try {
         const response = await fetch('/analyze-image', {
@@ -377,10 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFiles(files) {
       if (files.length > 0) {
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(files[0]);
-        plantImageUpload.files = dataTransfer.files;
-        plantImageUpload.dispatchEvent(new Event('change', { bubbles: true }));
+        // Use the shared processing function directly
+        processSelectedFile(files[0]);
       }
     }
   }
@@ -399,8 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
           recordElement.classList.add('diagnosis-record-item');
           
           let imagePreviewHtml = '';
-          if (record.image_data_preview && record.image_data_preview.length > 50) {
-              imagePreviewHtml = `<img src="data:image/jpeg;base64,${record.image_data_preview}" alt="진단 이미지 미리보기" style="width: 100px; height: auto; margin-bottom: 10px;">`;
+          // Use record.mime_type for the image src
+          if (record.image_data_preview && record.image_data_preview.length > 50 && record.mime_type) {
+              imagePreviewHtml = `<img src="data:${record.mime_type};base64,${record.image_data_preview}" alt="진단 이미지 미리보기" style="width: 100px; height: auto; margin-bottom: 10px;">`;
           }
 
           // Format confidence as percentage for records display
