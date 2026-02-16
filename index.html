@@ -58,6 +58,13 @@
         작물 이미지를 업로드하여 병해충을 진단하고 방제 정보를 받아보세요.
       </p>
       <div class="image-upload-container">
+        <select id="crop-select" data-key="crop-select-label">
+          <option value="">-- 작물을 선택하세요 --</option>
+          <option value="pepper">고추</option>
+          <option value="tomato">토마토</option>
+          <option value="cucumber">오이</option>
+          <option value="potato">감자</option>
+        </select>
         <input type="file" id="plant-image-upload" accept="image/*">
         <label for="plant-image-upload" class="upload-button" data-key="upload-image-button">이미지 업로드</label>
         <div class="image-preview-area">

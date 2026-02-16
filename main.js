@@ -67,219 +67,249 @@ document.addEventListener('DOMContentLoaded', () => {
       'form-submit-button': '문의 보내기',
       'pest-diagnosis-title': '병해충 진단',
       'pest-diagnosis-description': '작물 이미지를 업로드하여 병해충을 진단하고 방제 정보를 받아보세요.',
-      'upload-image-button': '이미지 업로드',
-      'image-preview-placeholder': '이미지 미리보기',
-      'analyze-image-button': 'AI 분석 시작',
-      'diagnosis-result-title': '진단 결과:',
-      'pest-name': '병해충 이름: ',
-      'control-info': '방제 정보: ',
-      'ai-analysis-error': 'AI 분석 중 오류가 발생했습니다: ',
-      'diagnosis-result-title-popup': '진단 결과:',
-      'close-button': '닫기',
-      'network-error': '서버와 통신 중 오류가 발생했습니다.'
-    },
-    'en': {
-      'title': 'Three Kids Farm',
-      'mode-toggle-label': 'Dark Mode',
-      'nav-home': 'Home',
-      'nav-produce-sales': 'Produce Sales',
-      'nav-smartfarm-consulting': 'Smartfarm Consulting',
-      'nav-contact-us': 'Contact Us',
-      'nav-pest-diagnosis': 'Pest Diagnosis',
-      'farm-name': 'Three Kids Farm',
-      'farm-inquiry': 'Agricultural Products Smart Farm Inquiry',
-      'slogan-1': 'Fresh Agricultural Products & Smart Farm Solutions',
-      'slogan-2': 'Premium agricultural products grown in pristine nature and state-of-the-art smart farm facilities',
-      'produce-sales': 'Agricultural Product Sales',
-      'eco-friendly-veg': 'Eco-Friendly Vegetables',
-      'fresh-healthy-food': 'Fresh and healthy food',
-      'organic-rice': 'Organic Rice',
-      'special-products': 'Special Products',
-      'smartfarm-consulting': 'Smart Farm Facility Consulting',
-      'auto-env-control': 'Automatic Environmental Control',
-      'remote-monitoring': 'Remote Monitoring',
-      'energy-management': 'Energy Management',
-      'contact-us': 'Contact Us',
-      'ceo-label': 'CEO',
-      'location-label': 'Yeongju-si, Gyeongsangbuk-do',
-      'copyright': '© 2026 Se-Ai Farm Smart Farm. All rights reserved.',
-      'form-name-label': 'Name:',
-      'form-email-label': 'Email:',
-      'form-message-label': 'Message:',
-      'form-submit-button': 'Send Inquiry',
-      'pest-diagnosis-title': 'Pest and Disease Diagnosis',
-      'pest-diagnosis-description': 'Upload a plant image to diagnose pests and diseases and get control information.',
-      'upload-image-button': 'Upload Image',
-      'image-preview-placeholder': 'Image Preview',
-      'analyze-image-button': 'Start AI Analysis',
-      'diagnosis-result-title': 'Diagnosis Result:',
-      'pest-name': 'Pest Name: ',
-      'control-info': 'Control Information: ',
-      'ai-analysis-error': 'An error occurred during AI analysis: ',
-      'diagnosis-result-title-popup': 'Diagnosis Result:',
-      'close-button': 'Close',
-      'network-error': 'An error occurred while communicating with the server.'
-    }
-  };
-
-  const setLanguage = (lang) => {
-    document.querySelectorAll('[data-key]').forEach(element => {
-      const key = element.getAttribute('data-key');
-      if (translations[lang][key]) {
-        if (element.tagName === 'TITLE') {
-          element.textContent = translations[lang][key];
-        } else if (element.tagName === 'BUTTON' && key === 'close-button') {
-          element.textContent = translations[lang][key];
-        }
-        else {
-          // Handle cases where the text might be inside a strong tag or directly in the element
-          if (element.firstElementChild && element.firstElementChild.tagName === 'STRONG') {
-            element.firstElementChild.textContent = translations[lang][key];
-          } else {
-            element.textContent = translations[lang][key];
-          }
-        }
-      }
-    });
-    htmlElement.lang = lang;
-    if (lang === 'en') {
-      modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
-    } else { // ko
-      modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
-    }
-  };
-
-  const savedLang = localStorage.getItem('lang') || 'ko';
-  languageSwitcher.value = savedLang;
-  setLanguage(savedLang);
-
-  languageSwitcher.addEventListener('change', (event) => {
-    const newLang = event.target.value;
-    localStorage.setItem('lang', newLang);
-    setLanguage(newLang);
-  });
-
-  // Update mode toggle button text when language changes, if the mode toggle button is clicked
-  modeToggle.addEventListener('click', () => {
-    const currentLang = htmlElement.lang;
-    if (currentLang === 'en') {
-      modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
-    } else { // ko
-      modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
-    }
-  });
-
-  // --- Pest Diagnosis Functionality ---
-  const plantImageUpload = document.getElementById('plant-image-upload');
-  const uploadButtonLabel = document.querySelector('label[for="plant-image-upload"]'); // <label> 요소 선택
-  const uploadedImagePreview = document.getElementById('uploaded-image-preview');
-  const imagePreviewPlaceholder = document.querySelector('.image-preview-area p[data-key="image-preview-placeholder"]');
-  const analyzeImageButton = document.getElementById('analyze-image-button');
-  // Removed direct references to diagnosisResults, diagnosisResultTitle, pestName, controlInfo as they are no longer used for inline display.
-  
-  // New modal elements
-  const diagnosisModal = document.getElementById('diagnosis-modal');
-  const closeButton = document.querySelector('.close-button');
-  const popupPestName = document.getElementById('popup-pest-name');
-  const popupControlInfo = document.getElementById('popup-control-info');
-
-  console.log('plantImageUpload element:', plantImageUpload); // 디버깅용
-  console.log('uploadButtonLabel element:', uploadButtonLabel); // 디버깅용
-
-  let selectedFile = null;
-
-  // 명시적으로 label 클릭 시 input 클릭 트리거
-  if (uploadButtonLabel) {
-    uploadButtonLabel.addEventListener('click', () => {
-      plantImageUpload.click();
-    });
-  }
-
-  plantImageUpload.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      selectedFile = file;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        uploadedImagePreview.src = e.target.result;
-        uploadedImagePreview.style.display = 'block';
-        imagePreviewPlaceholder.style.display = 'none';
-        
-        // Hide popup diagnosis results when a new image is uploaded
-        diagnosisModal.style.display = 'none'; 
-      };
-      reader.readAsDataURL(file);
-    } else {
-      selectedFile = null;
-      uploadedImagePreview.removeAttribute('src'); // Clear image source
-      uploadedImagePreview.alt = '업로드된 이미지 미리보기'; // Reset alt text
-      uploadedImagePreview.style.display = 'none';
-      imagePreviewPlaceholder.style.display = 'block';
-      diagnosisModal.style.display = 'none';
-    }
-  });
-
-  analyzeImageButton.addEventListener('click', async () => { // async 추가
-    if (!selectedFile) {
-      alert('이미지를 먼저 업로드해주세요.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.readAsDataURL(selectedFile);
-    reader.onloadend = async () => {
-      const base64Image = reader.result;
-
-      analyzeImageButton.textContent = '분석 중...';
-      analyzeImageButton.disabled = true;
-
-      try {
-        const response = await fetch('/analyze-image', { // Cloudflare Functions 엔드포인트
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ imageData: base64Image }),
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          const currentLang = htmlElement.lang || 'ko';
+                // New crop selection
+                'crop-select-label': '-- 작물을 선택하세요 --',
+                'crop-pepper': '고추',
+                'crop-tomato': '토마토',
+                'crop-cucumber': '오이',
+                'crop-potato': '감자',
+                'crop-select-placeholder': '작물을 선택해주세요.',
+                'upload-image-button': '이미지 업로드',
+                'image-preview-placeholder': '이미지 미리보기',
+                'analyze-image-button': 'AI 분석 시작',
+                'diagnosis-result-title': '진단 결과:',
+                'pest-name': '병해충 이름: ',
+                'control-info': '방제 정보: ',
+                'ai-analysis-error': 'AI 분석 중 오류가 발생했습니다: ',
+                'diagnosis-result-title-popup': '진단 결과:',
+                'close-button': '닫기',
+                'network-error': '서버와 통신 중 오류가 발생했습니다.'
+              },
+              'en': {
+                'title': 'Three Kids Farm',
+                'mode-toggle-label': 'Dark Mode',
+                'nav-home': 'Home',
+                'nav-produce-sales': 'Produce Sales',
+                'nav-smartfarm-consulting': 'Smartfarm Consulting',
+                'nav-contact-us': 'Contact Us',
+                'nav-pest-diagnosis': 'Pest Diagnosis',
+                'farm-name': 'Three Kids Farm',
+                'farm-inquiry': 'Agricultural Products Smart Farm Inquiry',
+                'slogan-1': 'Fresh Agricultural Products & Smart Farm Solutions',
+                'slogan-2': 'Premium agricultural products grown in pristine nature and state-of-the-art smart farm facilities',
+                'produce-sales': 'Agricultural Product Sales',
+                'eco-friendly-veg': 'Eco-Friendly Vegetables',
+                'fresh-healthy-food': 'Fresh and healthy food',
+                'organic-rice': 'Organic Rice',
+                'special-products': 'Special Products',
+                'smartfarm-consulting': 'Smart Farm Facility Consulting',
+                'auto-env-control': 'Automatic Environmental Control',
+                'remote-monitoring': 'Remote Monitoring',
+                'energy-management': 'Energy Management',
+                'contact-us': 'Contact Us',
+                'ceo-label': 'CEO',
+                'location-label': 'Yeongju-si, Gyeongsangbuk-do',
+                'copyright': '© 2026 Se-Ai Farm Smart Farm. All rights reserved.',
+                'form-name-label': 'Name:',
+                'form-email-label': 'Email:',
+                'form-message-label': 'Message:',
+                'form-submit-button': 'Send Inquiry',
+                'pest-diagnosis-title': 'Pest and Disease Diagnosis',
+                'pest-diagnosis-description': 'Upload a plant image to diagnose pests and diseases and get control information.',
+                // New crop selection
+                'crop-select-label': '-- Select a crop --',
+                'crop-pepper': 'Pepper',
+                'crop-tomato': 'Tomato',
+                'crop-cucumber': 'Cucumber',
+                'crop-potato': 'Potato',
+                'crop-select-placeholder': 'Please select a crop.',
+                'upload-image-button': 'Upload Image',
+                'image-preview-placeholder': 'Image Preview',
+                'analyze-image-button': 'Start AI Analysis',
+                'diagnosis-result-title': 'Diagnosis Result:',
+                'pest-name': 'Pest Name: ',
+                'control-info': 'Control Information: ',
+                'ai-analysis-error': 'An error occurred during AI analysis: ',
+                'diagnosis-result-title-popup': 'Diagnosis Result:',
+                'close-button': 'Close',
+                'network-error': 'An error occurred while communicating with the server.'
+              }
+            };
           
-          popupPestName.textContent = translations[currentLang]['pest-name'] + result.pestName;
-          popupControlInfo.textContent = translations[currentLang]['control-info'] + result.controlInfo;
-
-          diagnosisModal.style.display = 'flex'; // Show the modal
-        } else {
-          const currentLang = htmlElement.lang || 'ko';
-          alert(translations[currentLang]['ai-analysis-error'] + (result.error || '알 수 없는 오류'));
-          console.error('백엔드 오류:', result.error || '알 수 없는 오류', result.details ? '세부 정보: ' + result.details : '');
-          diagnosisModal.style.display = 'none';
-        }
-      } catch (error) {
-        const currentLang = htmlElement.lang || 'ko';
-        alert(translations[currentLang]['network-error']); // Use translated network error message
-        console.error('네트워크 또는 서버 오류:', error);
-        diagnosisModal.style.display = 'none';
-      } finally {
-        analyzeImageButton.textContent = 'AI 분석 시작';
-        analyzeImageButton.disabled = false;
-      }
-    };
-  });
-
-  // Close the modal when the close button is clicked
-  closeButton.addEventListener('click', () => {
-    diagnosisModal.style.display = 'none';
-  });
-
-  // Close the modal when clicking outside of the modal content
-  window.addEventListener('click', (event) => {
-    if (event.target == diagnosisModal) {
-      diagnosisModal.style.display = 'none';
-    }
-  }); // End of analyzeImageButton event listener
-
-  // Added a dummy comment to force a Git change and trigger redeployment.
-}); // End of DOMContentLoaded event listener
+            const setLanguage = (lang) => {
+              document.querySelectorAll('[data-key]').forEach(element => {
+                const key = element.getAttribute('data-key');
+                if (translations[lang][key]) {
+                  if (element.tagName === 'TITLE') {
+                    element.textContent = translations[lang][key];
+                  } else if (element.tagName === 'BUTTON' && key === 'close-button') {
+                    element.textContent = translations[lang][key];
+                  } else if (element.tagName === 'OPTION' && key.startsWith('crop-')) { // Handle crop options
+                    element.textContent = translations[lang][key];
+                  } else if (element.tagName === 'SELECT' && key === 'crop-select-label') {
+                    // For the select's default option, we might need special handling
+                    const defaultOption = element.querySelector('option[value=""]');
+                    if (defaultOption) {
+                        defaultOption.textContent = translations[lang][key];
+                    }
+                  }
+                  else {
+                    // Handle cases where the text might be inside a strong tag or directly in the element
+                    if (element.firstElementChild && element.firstElementChild.tagName === 'STRONG') {
+                      element.firstElementChild.textContent = translations[lang][key];
+                    } else {
+                      element.textContent = translations[lang][key];
+                    }
+                  }
+                }
+              });
+              htmlElement.lang = lang;
+              if (lang === 'en') {
+                modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+              } else { // ko
+                modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
+              }
+            };
+          
+            const savedLang = localStorage.getItem('lang') || 'ko';
+            languageSwitcher.value = savedLang;
+            setLanguage(savedLang);
+          
+            languageSwitcher.addEventListener('change', (event) => {
+              const newLang = event.target.value;
+              localStorage.setItem('lang', newLang);
+              setLanguage(newLang);
+            });
+          
+            // Update mode toggle button text when language changes, if the mode toggle button is clicked
+            modeToggle.addEventListener('click', () => {
+              const currentLang = htmlElement.lang;
+              if (currentLang === 'en') {
+                modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+              } else { // ko
+                modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
+              }
+            });
+          
+            // --- Pest Diagnosis Functionality ---
+            const plantImageUpload = document.getElementById('plant-image-upload');
+            const uploadButtonLabel = document.querySelector('label[for="plant-image-upload"]'); // <label> 요소 선택
+            const uploadedImagePreview = document.getElementById('uploaded-image-preview');
+            const imagePreviewPlaceholder = document.querySelector('.image-preview-area p[data-key="image-preview-placeholder"]');
+            const analyzeImageButton = document.getElementById('analyze-image-button');
+            const cropSelect = document.getElementById('crop-select'); // Get reference to crop select dropdown
+            // Removed direct references to diagnosisResults, diagnosisResultTitle, pestName, controlInfo as they are no longer used for inline display.
+            
+            // New modal elements
+            const diagnosisModal = document.getElementById('diagnosis-modal');
+            const closeButton = document.querySelector('.close-button');
+            const popupPestName = document.getElementById('popup-pest-name');
+            const popupControlInfo = document.getElementById('popup-control-info');
+          
+            console.log('plantImageUpload element:', plantImageUpload); // 디버깅용
+            console.log('uploadButtonLabel element:', uploadButtonLabel); // 디버깅용
+          
+            let selectedFile = null;
+          
+            // 명시적으로 label 클릭 시 input 클릭 트리거
+            if (uploadButtonLabel) {
+              uploadButtonLabel.addEventListener('click', () => {
+                plantImageUpload.click();
+              });
+            }
+          
+            plantImageUpload.addEventListener('change', (event) => {
+              const file = event.target.files[0];
+              if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  uploadedImagePreview.src = e.target.result;
+                  uploadedImagePreview.style.display = 'block';
+                  imagePreviewPlaceholder.style.display = 'none';
+                  
+                  // Hide popup diagnosis results when a new image is uploaded
+                  diagnosisModal.style.display = 'none'; 
+                };
+                reader.readAsDataURL(file);
+              } else {
+                selectedFile = null;
+                uploadedImagePreview.removeAttribute('src'); // Clear image source
+                uploadedImagePreview.alt = '업로드된 이미지 미리보기'; // Reset alt text
+                uploadedImagePreview.style.display = 'none';
+                imagePreviewPlaceholder.style.display = 'block';
+                diagnosisModal.style.display = 'none';
+              }
+            });
+          
+            analyzeImageButton.addEventListener('click', async () => { // async 추가
+              if (!selectedFile) {
+                alert('이미지를 먼저 업로드해주세요.');
+                return;
+              }
+      
+              const selectedCrop = cropSelect.value;
+              if (!selectedCrop) {
+                const currentLang = htmlElement.lang || 'ko';
+                alert(translations[currentLang]['crop-select-placeholder']);
+                return;
+              }
+          
+              const reader = new FileReader();
+              reader.readAsDataURL(selectedFile);
+              reader.onloadend = async () => {
+                const base64Image = reader.result;
+          
+                analyzeImageButton.textContent = '분석 중...';
+                analyzeImageButton.disabled = true;
+          
+                try {
+                  const response = await fetch('/analyze-image', { // Cloudflare Functions 엔드포인트
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ imageData: base64Image, cropName: selectedCrop }),
+                  });
+          
+                  const result = await response.json();
+          
+                  if (response.ok) {
+                    const currentLang = htmlElement.lang || 'ko';
+                    
+                    popupPestName.textContent = translations[currentLang]['pest-name'] + result.pestName;
+                    popupControlInfo.textContent = translations[currentLang]['control-info'] + result.controlInfo;
+          
+                    diagnosisModal.style.display = 'flex'; // Show the modal
+                  } else {
+                    const currentLang = htmlElement.lang || 'ko';
+                    alert(translations[currentLang]['ai-analysis-error'] + (result.error || '알 수 없는 오류'));
+                    console.error('백엔드 오류:', result.error || '알 수 없는 오류', result.details ? '세부 정보: ' + result.details : '');
+                    diagnosisModal.style.display = 'none';
+                  }
+                } catch (error) {
+                  const currentLang = htmlElement.lang || 'ko';
+                  alert(translations[currentLang]['network-error']); // Use translated network error message
+                  console.error('네트워크 또는 서버 오류:', error);
+                  diagnosisModal.style.display = 'none';
+                } finally {
+                  analyzeImageButton.textContent = 'AI 분석 시작';
+                  analyzeImageButton.disabled = false;
+                }
+              };
+            });
+          
+            // Close the modal when the close button is clicked
+            closeButton.addEventListener('click', () => {
+              diagnosisModal.style.display = 'none';
+            });
+          
+            // Close the modal when clicking outside of the modal content
+            window.addEventListener('click', (event) => {
+              if (event.target == diagnosisModal) {
+                diagnosisModal.style.display = 'none';
+              }
+            }); // End of analyzeImageButton event listener
+          
+            // Added a dummy comment to force a Git change and trigger redeployment.
+          }); // End of DOMContentLoaded event listener
