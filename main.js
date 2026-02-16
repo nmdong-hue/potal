@@ -196,11 +196,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   plantImageUpload.addEventListener('change', (event) => {
+    console.log('plantImageUpload change event fired.');
     const file = event.target.files[0];
     if (file) {
+      console.log('File selected:', file.name, file.type, file.size, 'bytes');
       selectedFile = file;
       const reader = new FileReader();
       reader.onload = (e) => {
+        console.log('FileReader loaded, image data URL length:', e.target.result.length);
         uploadedImagePreview.src = e.target.result;
         uploadedImagePreview.style.display = 'block';
         imagePreviewPlaceholder.style.display = 'none';
@@ -210,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       reader.readAsDataURL(file);
     } else {
+      console.log('No file selected or file input cleared.');
       selectedFile = null;
       uploadedImagePreview.removeAttribute('src'); // Clear image source
       uploadedImagePreview.alt = '업로드된 이미지 미리보기'; // Reset alt text
@@ -234,7 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
       analyzeImageButton.disabled = true;
 
       try {
-        const response = await fetch('/functions/analyze-image', { // Cloudflare Functions 엔드포인트
+        console.log('Sending request to /api/analyze-image');
+        const response = await fetch('/api/analyze-image', { // Cloudflare Functions 엔드포인트
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -242,7 +247,10 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({ imageData: base64Image }),
         });
 
-        const result = await response.json();
+        const rawResponseText = await response.text();
+        console.log('Raw response from server:', rawResponseText);
+
+        const result = JSON.parse(rawResponseText); // Parse the text response as JSON
 
         if (response.ok) {
           const currentLang = htmlElement.lang || 'ko';
