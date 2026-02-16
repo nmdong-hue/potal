@@ -45,7 +45,7 @@ export async function onRequestPost(context) {
 
         // Gemini 1.5 Flash Latest 모델을 직접 호출
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1alpha/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: {
