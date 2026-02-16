@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
       analyzeImageButton.disabled = true;
 
       try {
-        const response = await fetch('/api/analyze-image', { // Cloudflare Functions 엔드포인트
+        const response = await fetch('/analyze-image', { // Cloudflare Functions 엔드포인트
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
