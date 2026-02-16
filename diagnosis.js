@@ -435,10 +435,13 @@ document.addEventListener('DOMContentLoaded', () => {
           if (recordConfidenceText !== 'N/A' && !isNaN(parseFloat(recordConfidenceText))) {
             recordConfidenceText = parseFloat(recordConfidenceText) + '%';
           }
+          
+          const currentLang = htmlElement.lang || 'ko';
+          const translatedCropName = translations[currentLang]['crop-' + record.crop_name] || record.crop_name;
 
           recordElement.innerHTML = `
             ${imagePreviewHtml}
-            <p><strong>${translations[htmlElement.lang || 'ko']['record-crop']}</strong> ${record.crop_name}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-crop']}</strong> ${translatedCropName}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-pest']}</strong> ${record.pest_name}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-confidence']}</strong> ${recordConfidenceText}</p>
             <p><strong>${translations[htmlElement.lang || 'ko']['record-recommendations']}</strong> ${record.recommendations || 'N/A'}</p>
