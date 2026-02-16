@@ -266,64 +266,62 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(selectedFile);
-    reader.onloadend = async () => {
-      const base64Image = reader.result;
+    const resizedImageBase64 = await resizeImage(selectedFile, 400, 400, 0.7); // Resize image to 400px max, 70% quality
+    const mimeType = resizedImageBase64.split(',')[0].split(':')[1].split(';')[0];
 
-      analyzeImageButton.textContent = '분석 중...';
-      analyzeImageButton.disabled = true;
-      clearDiagnosisDisplay(); // Clear results before new analysis
 
-      try {
-        const response = await fetch('/analyze-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ imageData: base64Image, cropName: selectedCrop }),
-        });
+    analyzeImageButton.textContent = '분석 중...';
+    analyzeImageButton.disabled = true;
+    clearDiagnosisDisplay(); // Clear results before new analysis
 
-        const result = await response.json();
-        console.log('API Analysis Result:', result); // Log the full result for debugging
+    try {
+      const response = await fetch('/analyze-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageData: resizedImageBase64, cropName: selectedCrop, mimeType: mimeType }),
+      });
 
-        if (response.ok) {
-          const currentLang = htmlElement.lang || 'ko';
-          
-          // Displaying new detailed fields
-          pestNameDisplay.textContent = translations[currentLang]['pest-name'] + (result.pestName || 'N/A');
-          
-          // Format confidence as percentage
-          let confidenceText = result.confidence || 'N/A';
-          if (confidenceText !== 'N/A' && !isNaN(parseFloat(confidenceText))) {
-            confidenceText = parseFloat(confidenceText) + '%';
-          }
-          confidenceDisplay.textContent = translations[currentLang]['confidence'] + confidenceText;
-          
-          recommendationsDisplay.textContent = translations[currentLang]['recommendations'] + (result.recommendations || 'N/A');
-          notesDisplay.textContent = translations[currentLang]['notes'] + (result.notes || 'N/A');
-          
-          if (result.controlInfo) {
-            controlInfoDisplay.textContent = translations[currentLang]['control-info'] + (result.controlInfo || 'N/A');
-          } else {
-            controlInfoDisplay.textContent = ''; // Clear if not provided
-          }
+      const result = await response.json();
+      console.log('API Analysis Result:', result); // Log the full result for debugging
 
-          fetchRecentDiagnosisRecords(); // Refresh recent records after a new analysis
-        } else {
-          const currentLang = htmlElement.lang || 'ko';
-          alert(translations[currentLang]['ai-analysis-error'] + (result.error || '알 수 없는 오류'));
-          console.error('백엔드 오류:', result.error || '알 수 없는 오류', result.details ? '세부 정보: ' + result.details : '');
-        }
-      } catch (error) {
+      if (response.ok) {
         const currentLang = htmlElement.lang || 'ko';
-        alert(translations[currentLang]['network-error']);
-        console.error('네트워크 또는 서버 오류:', error);
-      } finally {
-        analyzeImageButton.textContent = 'AI 분석 시작';
-        analyzeImageButton.disabled = false;
+        
+        // Displaying new detailed fields
+        pestNameDisplay.textContent = translations[currentLang]['pest-name'] + (result.pestName || 'N/A');
+        
+        // Format confidence as percentage
+        let confidenceText = result.confidence || 'N/A';
+        if (confidenceText !== 'N/A' && !isNaN(parseFloat(confidenceText))) {
+          confidenceText = parseFloat(confidenceText) + '%';
+        }
+        confidenceDisplay.textContent = translations[currentLang]['confidence'] + confidenceText;
+        
+        recommendationsDisplay.textContent = translations[currentLang]['recommendations'] + (result.recommendations || 'N/A');
+        notesDisplay.textContent = translations[currentLang]['notes'] + (result.notes || 'N/A');
+        
+        if (result.controlInfo) {
+          controlInfoDisplay.textContent = translations[currentLang]['control-info'] + (result.controlInfo || 'N/A');
+        } else {
+          controlInfoDisplay.textContent = ''; // Clear if not provided
+        }
+
+        fetchRecentDiagnosisRecords(); // Refresh recent records after a new analysis
+      } else {
+        const currentLang = htmlElement.lang || 'ko';
+        alert(translations[currentLang]['ai-analysis-error'] + (result.error || '알 수 없는 오류'));
+        console.error('백엔드 오류:', result.error || '알 수 없는 오류', result.details ? '세부 정보: ' + result.details : '');
       }
-    };
+    } catch (error) {
+      const currentLang = htmlElement.lang || 'ko';
+      alert(translations[currentLang]['network-error']);
+      console.error('네트워크 또는 서버 오류:', error);
+    } finally {
+      analyzeImageButton.textContent = 'AI 분석 시작';
+      analyzeImageButton.disabled = false;
+    }
   });
 
   // --- Drag and Drop Functionality ---
@@ -366,10 +364,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFiles(files) {
       if (files.length > 0) {
-        // Use the shared processing function directly
         processSelectedFile(files[0]);
       }
     }
+  }
+
+  // --- Image Resizing Function ---
+  function resizeImage(file, maxWidth, maxHeight, quality) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Get base64 data URL with specified quality
+          // Default to image/jpeg if original type is not suitable or unknown
+          const outputMimeType = file.type.startsWith('image/') ? file.type : 'image/jpeg';
+          const resizedBase64 = canvas.toDataURL(outputMimeType, quality);
+          resolve(resizedBase64);
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
   }
 
   // --- Recent Diagnosis Records Functionality ---

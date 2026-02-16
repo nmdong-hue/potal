@@ -25,6 +25,7 @@ export async function onRequestPost(context) {
         const requestBody = await request.json();
         const imageData = requestBody.imageData; // 프론트엔드에서 JSON 본문을 받음
         const cropName = requestBody.cropName; // 추가된 작물 이름
+        const mimeTypeFromFrontend = requestBody.mimeType; // 프론트엔드에서 받은 MIME 타입
 
         if (!imageData) {
             return new Response(JSON.stringify({ error: '이미지 데이터가 제공되지 않았습니다.' }), {
@@ -40,8 +41,10 @@ export async function onRequestPost(context) {
             });
         }
 
-        const mimeTypeMatch = imageData.split(',')[0].split(':')[1].split(';')[0];
-        const base64Data = imageData.split(',')[1];
+        // 프론트엔드에서 이미 base64로 변환된 resizedImageBase64가 imageData로 넘어옴
+        // mimeTypeFromFrontend를 사용하거나, imageData에서 다시 추출 (resizeImage가 jpeg로 변환하므로)
+        const mimeTypeToStore = mimeTypeFromFrontend || 'image/jpeg';
+        const base64DataStripped = imageData.split(',')[1]; // 'data:image/jpeg;base64,' 부분 제거
 
         // Gemini 2.5 Flash Image 모델을 직접 호출
         const geminiResponse = await fetch(
@@ -76,8 +79,8 @@ export async function onRequestPost(context) {
                                 },
                                 {
                                     inline_data: {
-                                        mime_type: mimeTypeMatch || "image/jpeg", // 동적으로 mime_type 설정, 없으면 jpeg 기본
-                                        data: base64Data
+                                        mime_type: mimeTypeToStore || "image/jpeg", // 동적으로 mime_type 설정
+                                        data: base64DataStripped
                                     }
                                 }
                             ]
@@ -156,14 +159,13 @@ export async function onRequestPost(context) {
 
         // --- 분석 기록 저장 ---
         try {
-            // 이미지 데이터 전체를 저장하는 것은 비효율적이므로, 작은 미리보기 Base64를 저장
-            // 여기서는 Base64 데이터의 처음 2000자까지 저장하여 미리보기를 개선합니다.
-            const imageDataPreview = base64Data.substring(0, 2000); 
+            // resizedImageBase64에서 'data:image/jpeg;base64,' 부분을 제외한 순수 base64 데이터만 저장
+            const imageDataPreview = base64DataStripped; 
 
             await DB.prepare(
                 `INSERT INTO analysis_records (crop_name, image_data_preview, mime_type, pest_name, confidence, recommendations, notes, control_info, full_gemini_response)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            ).bind(cropName, imageDataPreview, mimeTypeMatch, pestName, confidence, recommendations, notes, controlInfo, fullResponseText)
+            ).bind(cropName, imageDataPreview, mimeTypeToStore, pestName, confidence, recommendations, notes, controlInfo, fullResponseText)
             .run();
             console.log('분석 기록이 D1에 성공적으로 저장되었습니다.');
         } catch (dbError) {
