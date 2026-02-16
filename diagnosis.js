@@ -48,17 +48,31 @@ document.addEventListener('DOMContentLoaded', () => {
       'crop-tomato': '토마토',
       'crop-cucumber': '오이',
       'crop-potato': '감자',
+      'crop-cabbage': '양배추',
+      'crop-lettuce': '상추',
+      'crop-garlic': '마늘',
+      'crop-radish': '무',
+      'crop-chinese-cabbage': '배추',
       'crop-select-placeholder': '작물을 선택해주세요.',
       'upload-image-button': '이미지 업로드',
       'image-preview-placeholder': '이미지 미리보기',
       'analyze-image-button': 'AI 분석 시작',
       'diagnosis-result-title': '진단 결과:',
       'pest-name': '병해충 이름: ',
-      'control-info': '방제 정보: ',
+      'confidence': '신뢰도: ',
+      'recommendations': '권장 조치: ',
+      'notes': '추가 참고사항: ',
+      'control-info': '방제 정보: ', // 기존 controlInfo는 일반적인 조치 정보로 사용
       'ai-analysis-error': 'AI 분석 중 오류가 발생했습니다: ',
       'network-error': '서버와 통신 중 오류가 발생했습니다.',
       'copyright': '© 2026 세아이농장 스마트팜. All rights reserved.',
-      'recent-diagnosis-records-title': '최근 진단 기록'
+      'recent-diagnosis-records-title': '최근 진단 기록',
+      'record-crop': '작물:',
+      'record-pest': '병해충 이름:',
+      'record-confidence': '신뢰도:',
+      'record-recommendations': '권장 조치:',
+      'record-notes': '추가 참고사항:',
+      'record-timestamp': '진단 시간:'
     },
     'en': {
       'title-diagnosis': 'Pest AI Diagnosis',
@@ -72,17 +86,31 @@ document.addEventListener('DOMContentLoaded', () => {
       'crop-tomato': 'Tomato',
       'crop-cucumber': 'Cucumber',
       'crop-potato': 'Potato',
+      'crop-cabbage': 'Cabbage',
+      'crop-lettuce': 'Lettuce',
+      'crop-garlic': 'Garlic',
+      'crop-radish': 'Radish',
+      'crop-chinese-cabbage': 'Chinese Cabbage',
       'crop-select-placeholder': 'Please select a crop.',
       'upload-image-button': 'Upload Image',
       'image-preview-placeholder': 'Image Preview',
       'analyze-image-button': 'Start AI Analysis',
       'diagnosis-result-title': 'Diagnosis Result:',
       'pest-name': 'Pest Name: ',
+      'confidence': 'Confidence: ',
+      'recommendations': 'Recommendations: ',
+      'notes': 'Additional Notes: ',
       'control-info': 'Control Information: ',
       'ai-analysis-error': 'An error occurred during AI analysis: ',
       'network-error': 'An error occurred while communicating with the server.',
       'copyright': '© 2026 Se-Ai Farm Smart Farm. All rights reserved.',
-      'recent-diagnosis-records-title': 'Recent Diagnosis Records'
+      'recent-diagnosis-records-title': 'Recent Diagnosis Records',
+      'record-crop': 'Crop:',
+      'record-pest': 'Pest Name:',
+      'record-confidence': 'Confidence:',
+      'record-recommendations': 'Recommendations:',
+      'record-notes': 'Additional Notes:',
+      'record-timestamp': 'Diagnosis Time:'
     }
   };
 
@@ -92,9 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (translations[lang][key]) {
         if (element.tagName === 'TITLE') {
           element.textContent = translations[lang][key];
-        } else if (key === 'pest-name' || key === 'control-info') {
+        } else if (key === 'pest-name' || key === 'control-info' || key === 'confidence' || key === 'recommendations' || key === 'notes') {
           // Handled dynamically later, don't set placeholder here to avoid conflicts
-        } else if (element.tagName === 'OPTION' && key.startsWith('crop-')) { // Handle crop options
+        } else if (element.tagName === 'OPTION' && key.startsWith('crop-')) {
           element.textContent = translations[lang][key];
         } else if (element.tagName === 'SELECT' && key === 'crop-select-label') {
           const defaultOption = element.querySelector('option[value=""]');
@@ -113,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     htmlElement.lang = lang;
     if (lang === 'en') {
       modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
-    } else { // ko
+    } else {
       modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
     }
   };
@@ -132,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentLang = htmlElement.lang;
     if (currentLang === 'en') {
       modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
-    } else { // ko
+    } else {
       modeToggle.textContent = document.body.classList.contains('dark-mode') ? '라이트 모드' : '다크 모드';
     }
   });
@@ -147,11 +175,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const diagnosisResultsDiv = document.getElementById('diagnosis-results');
   const pestNameDisplay = document.getElementById('pest-name');
-  const controlInfoDisplay = document.getElementById('control-info');
-  const recentDiagnosisRecordsList = document.getElementById('recent-diagnosis-records-list'); // New element
+  // New detailed result displays
+  const confidenceDisplay = document.createElement('p');
+  confidenceDisplay.id = 'confidence';
+  const recommendationsDisplay = document.createElement('p');
+  recommendationsDisplay.id = 'recommendations';
+  const notesDisplay = document.createElement('p');
+  notesDisplay.id = 'notes';
+  const controlInfoDisplay = document.getElementById('control-info'); // Keep existing for general control info
+
+  // Append new elements to diagnosisResultsDiv if they aren't already there
+  if (!document.getElementById('confidence')) diagnosisResultsDiv.appendChild(confidenceDisplay);
+  if (!document.getElementById('recommendations')) diagnosisResultsDiv.appendChild(recommendationsDisplay);
+  if (!document.getElementById('notes')) diagnosisResultsDiv.appendChild(notesDisplay);
 
   pestNameDisplay.textContent = '';
+  confidenceDisplay.textContent = '';
+  recommendationsDisplay.textContent = '';
+  notesDisplay.textContent = '';
   controlInfoDisplay.textContent = '';
+  
+  const recentDiagnosisRecordsList = document.getElementById('recent-diagnosis-records-list');
   
   let selectedFile = null;
 
@@ -172,6 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
         imagePreviewPlaceholder.style.display = 'none';
         
         pestNameDisplay.textContent = '';
+        confidenceDisplay.textContent = '';
+        recommendationsDisplay.textContent = '';
+        notesDisplay.textContent = '';
         controlInfoDisplay.textContent = '';
       };
       reader.readAsDataURL(file);
@@ -183,6 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
       imagePreviewPlaceholder.style.display = 'block';
       
       pestNameDisplay.textContent = '';
+      confidenceDisplay.textContent = '';
+      recommendationsDisplay.textContent = '';
+      notesDisplay.textContent = '';
       controlInfoDisplay.textContent = '';
     }
   });
@@ -208,6 +258,9 @@ document.addEventListener('DOMContentLoaded', () => {
       analyzeImageButton.textContent = '분석 중...';
       analyzeImageButton.disabled = true;
       pestNameDisplay.textContent = '';
+      confidenceDisplay.textContent = '';
+      recommendationsDisplay.textContent = '';
+      notesDisplay.textContent = '';
       controlInfoDisplay.textContent = '';
 
       try {
@@ -224,10 +277,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response.ok) {
           const currentLang = htmlElement.lang || 'ko';
           
+          // Displaying new detailed fields
           pestNameDisplay.textContent = translations[currentLang]['pest-name'] + result.pestName;
-          controlInfoDisplay.textContent = translations[currentLang]['control-info'] + result.controlInfo;
-          // Refresh recent records after a new analysis
-          fetchRecentDiagnosisRecords();
+          confidenceDisplay.textContent = translations[currentLang]['confidence'] + result.confidence;
+          recommendationsDisplay.textContent = translations[currentLang]['recommendations'] + result.recommendations;
+          notesDisplay.textContent = translations[currentLang]['notes'] + result.notes;
+          // controlInfoDisplay can be set from result.controlInfo if it's still distinct,
+          // otherwise it might be part of recommendations. For now, set it if provided.
+          if (result.controlInfo) {
+            controlInfoDisplay.textContent = translations[currentLang]['control-info'] + result.controlInfo;
+          } else {
+            controlInfoDisplay.textContent = ''; // Clear if not provided
+          }
+
+          fetchRecentDiagnosisRecords(); // Refresh recent records after a new analysis
         } else {
           const currentLang = htmlElement.lang || 'ko';
           alert(translations[currentLang]['ai-analysis-error'] + (result.error || '알 수 없는 오류'));
@@ -283,7 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleFiles(files) {
-      // Simulate file input change event
       if (files.length > 0) {
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(files[0]);
@@ -296,35 +358,41 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Recent Diagnosis Records Functionality ---
   async function fetchRecentDiagnosisRecords() {
     try {
-      // Fetching records from a new endpoint. This endpoint needs to be created.
-      const response = await fetch('/api/diagnosis-records'); // Assuming a new endpoint
+      const response = await fetch('/api/diagnosis-records');
       const records = await response.json();
 
-      recentDiagnosisRecordsList.innerHTML = ''; // Clear previous records
+      recentDiagnosisRecordsList.innerHTML = '';
 
       if (records && records.length > 0) {
         records.forEach(record => {
           const recordElement = document.createElement('div');
           recordElement.classList.add('diagnosis-record-item');
+          
+          let imagePreviewHtml = '';
+          if (record.image_data_preview) {
+              imagePreviewHtml = `<img src="data:image/jpeg;base64,${record.image_data_preview}..." alt="진단 이미지 미리보기" style="width: 100px; height: auto; margin-bottom: 10px;">`;
+          }
+
           recordElement.innerHTML = `
-            <p><strong>작물:</strong> ${record.crop_name}</p>
-            <p><strong>병해충 이름:</strong> ${record.pest_name}</p>
-            <p><strong>진단 시간:</strong> ${new Date(record.timestamp).toLocaleString()}</p>
-            <!-- 이미지 미리보기는 Base64가 길기 때문에 생략하거나 서버에서 URL을 받아서 처리해야 함 -->
-            <!-- <img src="data:image/jpeg;base64,${record.image_data_preview}..." alt="진단 이미지 미리보기" style="width: 100px; height: auto;"> -->
+            ${imagePreviewHtml}
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-crop']}</strong> ${record.crop_name}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-pest']}</strong> ${record.pest_name}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-confidence']}</strong> ${record.confidence || 'N/A'}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-recommendations']}</strong> ${record.recommendations || 'N/A'}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-notes']}</strong> ${record.notes || 'N/A'}</p>
+            <p><strong>${translations[htmlElement.lang || 'ko']['record-timestamp']}</strong> ${new Date(record.timestamp).toLocaleString()}</p>
           `;
           recentDiagnosisRecordsList.appendChild(recordElement);
         });
       } else {
-        recentDiagnosisRecordsList.innerHTML = '<p>최근 진단 기록이 없습니다.</p>';
+        recentDiagnosisRecordsList.innerHTML = `<p>${translations[htmlElement.lang || 'ko']['no-recent-records'] || '최근 진단 기록이 없습니다.'}</p>`;
       }
     } catch (error) {
       console.error('최근 진단 기록을 불러오는 중 오류 발생:', error);
-      recentDiagnosisRecordsList.innerHTML = '<p>진단 기록을 불러올 수 없습니다.</p>';
+      recentDiagnosisRecordsList.innerHTML = `<p>${translations[htmlElement.lang || 'ko']['error-loading-records'] || '진단 기록을 불러올 수 없습니다.'}</p>`;
     }
   }
 
-  // Fetch records when the page loads
   fetchRecentDiagnosisRecords();
 
 }); // End of DOMContentLoaded event listener

@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
     }
 
     if (!DB) {
-        return new Response(JSON.stringify({ error: 'Cloudflare D1 "DB" 바인딩이 설정되지 않았습니다. wrangler.toml 파일을 확인해주세요.' }), {
+        return new Response(JSON.stringify({ error: 'Cloudflare D1 "DB" 바인딩이 설정되지 않았습니다.' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
@@ -34,7 +34,7 @@ export async function onRequestPost(context) {
         }
 
         if (!cropName) {
-            return new Response(JSON.stringify({ error: '작물 이름이 제공되지 않습니다.' }), {
+            return new Response(JSON.stringify({ error: '작물 이름이 제공되지 않았습니다.' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -56,7 +56,22 @@ export async function onRequestPost(context) {
                         {
                             parts: [
                                 {
-                                    text: `이 ${cropName} 병해충 사진을 분석하고 병해충 이름과 방제 방법을 한국어로 설명해줘. 응답은 다음 형식으로 부탁해:\n\n병해충 이름: [병해충 이름 또는 '건강한 식물']\n방제 방법: [방제 방법 또는 '필요 없음']\n\n만약 건강한 식물이라면, 병해충 이름에는 '건강한 식물'을, 방제 방법에는 '필요 없음'이라고만 적어줘.`
+                                    text: `다음은 ${cropName}의 병해충 이미지입니다. 이 이미지를 분석하여 다음 JSON 형식으로 자세한 진단 정보를 제공해주세요.
+                                    - "pestName": 진단된 병해충 이름 (또는 '건강한 식물')
+                                    - "confidence": 진단 신뢰도 (예: "85%", "높은", "낮은")
+                                    - "recommendations": 권장 조치 및 방제 방법
+                                    - "notes": 추가 참고사항
+
+                                    예시 응답:
+                                    {
+                                      "pestName": "고온장해 또는 화상병",
+                                      "confidence": "85% (높음)",
+                                      "recommendations": "병든 고추를 즉시 수거하고, 발생한 부위를 제거한 후, 예방적인 약제를 사용하여 잎과 줄기를 치료하십시오. 또한, 관수량 조절과 통풍이 잘 되도록 하여 생육 환경을 개선해야 합니다.",
+                                      "notes": "고온이나 습도 변화로 인한 고온장해가 의심됩니다. 건강한 식물로 유지하기 위해 주의 깊은 관리가 필요합니다."
+                                    }
+
+                                    만약 건강한 식물이라면 "pestName"에 '건강한 식물'을, "confidence"에 '100% (매우 높음)', "recommendations"에 '필요 없음', "notes"에 '특이사항 없음'이라고만 적어주세요.
+                                    `
                                 },
                                 {
                                     inline_data: {
@@ -89,53 +104,53 @@ export async function onRequestPost(context) {
 
         const fullResponseText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
         
-        let pestName = "알 수 없음";
-        let controlInfo = "정보 없음";
+        let pestName = "정보 없음";
+        let confidence = "정보 없음";
+        let recommendations = "정보 없음";
+        let notes = "정보 없음";
+        let controlInfo = "정보 없음"; // 기존 controlInfo는 general recommendations로 사용
 
-        // Gemini 2.5 Flash Image의 응답에서 '병해충 이름:'과 '방제 방법:'을 파싱
-        const pestNameMatch = fullResponseText.match(/병해충 이름:\s*(.*)/i);
-        if (pestNameMatch && pestNameMatch[1]) {
-            pestName = pestNameMatch[1].trim();
-        }
-
-        const controlInfoMatch = fullResponseText.match(/방제 방법:\s*(.*)/i);
-        if (controlInfoMatch && controlInfoMatch[1]) {
-            controlInfo = controlInfoMatch[1].trim();
+        // Gemini의 응답이 JSON 형식이라고 가정하고 파싱
+        try {
+            const parsedResult = JSON.parse(fullResponseText);
+            pestName = parsedResult.pestName || pestName;
+            confidence = parsedResult.confidence || confidence;
+            recommendations = parsedResult.recommendations || recommendations;
+            notes = parsedResult.notes || notes;
+            // 기존 controlInfo는 recommendations와 동일하게 설정하거나, 별도의 일반 방제 정보가 필요하면 해당 필드를 추가
+            controlInfo = recommendations; 
+        } catch (jsonError) {
+            console.error('Gemini 응답 JSON 파싱 오류:', jsonError);
+            // JSON 파싱 실패 시, 원시 텍스트에서 기본 파싱 시도 (이전 로직)
+            const pestNameMatch = fullResponseText.match(/병해충 이름:\s*(.*)/i);
+            if (pestNameMatch && pestNameMatch[1]) {
+                pestName = pestNameMatch[1].trim();
+            }
+            const controlInfoMatch = fullResponseText.match(/방제 방법:\s*(.*)/i);
+            if (controlInfoMatch && controlInfoMatch[1]) {
+                controlInfo = controlInfoMatch[1].trim();
+            }
+            // 상세 정보는 "정보 없음"으로 남겨둠
         }
         
-        // "건강한 식물"의 경우 특별 처리
-        if (pestName.toLowerCase() === "건강한 식물") {
-            if (controlInfo.toLowerCase() === "필요 없음") {
-                // 이미 적절히 설정됨
-            } else {
-                // 혹시 모를 경우를 대비
-                controlInfo = "특별한 조치가 필요 없습니다.";
-            }
+        // "건강한 식물"의 경우 특별 처리 (JSON 파싱 후에도 적용)
+        if (pestName.toLowerCase().includes("건강한 식물")) {
+            confidence = confidence.toLowerCase().includes("필요 없음") || confidence.toLowerCase().includes("정보 없음") ? "100% (매우 높음)" : confidence;
+            recommendations = recommendations.toLowerCase().includes("필요 없음") || recommendations.toLowerCase().includes("정보 없음") ? "특별한 조치가 필요 없습니다." : recommendations;
+            notes = notes.toLowerCase().includes("특이사항 없음") || notes.toLowerCase().includes("정보 없음") ? "특이사항 없음" : notes;
+            controlInfo = recommendations; // 기존 controlInfo도 업데이트
         }
 
         // --- 분석 기록 저장 ---
-        // D1 데이터베이스에 레코드 삽입
-        // 이 코드를 실행하기 전에 Cloudflare D1 데이터베이스 'pest_diagnosis_db'를 생성하고
-        // Cloudflare Function에 'DB'라는 이름으로 바인딩해야 합니다.
-        // 또한, 'analysis_records' 테이블을 미리 생성해야 합니다:
-        // CREATE TABLE analysis_records (
-        //   id INTEGER PRIMARY KEY AUTOINCREMENT,
-        //   timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-        //   crop_name TEXT NOT NULL,
-        //   image_data_preview TEXT, -- 이미지 데이터의 작은 미리보기 또는 참조 URL
-        //   pest_name TEXT,
-        //   control_info TEXT,
-        //   full_gemini_response TEXT
-        // );
         try {
-            // 이미지 데이터 전체를 저장하는 것은 비효율적이므로, 짧은 미리보기 또는 URL 참조를 사용합니다.
-            // 여기서는 간단하게 Base64 데이터의 처음 100자만 저장합니다.
-            const imageDataPreview = base64Data.substring(0, 100); 
+            // 이미지 데이터 전체를 저장하는 것은 비효율적이므로, 작은 미리보기 Base64를 저장
+            // 여기서는 Base64 데이터의 처음 500자까지 저장하여 미리보기를 개선합니다.
+            const imageDataPreview = base64Data.substring(0, 500); 
 
             await DB.prepare(
-                `INSERT INTO analysis_records (crop_name, image_data_preview, pest_name, control_info, full_gemini_response)
-                 VALUES (?, ?, ?, ?, ?)`
-            ).bind(cropName, imageDataPreview, pestName, controlInfo, fullResponseText)
+                `INSERT INTO analysis_records (crop_name, image_data_preview, pest_name, confidence, recommendations, notes, control_info, full_gemini_response)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+            ).bind(cropName, imageDataPreview, pestName, confidence, recommendations, notes, controlInfo, fullResponseText)
             .run();
             console.log('분석 기록이 D1에 성공적으로 저장되었습니다.');
         } catch (dbError) {
@@ -145,7 +160,7 @@ export async function onRequestPost(context) {
         // --- 분석 기록 저장 끝 ---
 
 
-        return new Response(JSON.stringify({ pestName, controlInfo, fullResponse: fullResponseText }), {
+        return new Response(JSON.stringify({ pestName, confidence, recommendations, notes, controlInfo, fullResponse: fullResponseText }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
         });
